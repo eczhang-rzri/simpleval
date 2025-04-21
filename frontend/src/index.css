@@ -64,3 +64,12 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+.img-profile {
+  border: 1px solid rgb(59, 59, 59);
+  border-radius: 4px;
+  padding: 16px;
+  width: 150px;
+  height: 150px;
+  background-color: #d1d1d1;
+}

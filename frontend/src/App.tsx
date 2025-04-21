@@ -10,6 +10,7 @@ import Footer from './components/Footer'
 import Home from './pages/Home'
 import Teams from './pages/Teams'
 import Players from './pages/Players'
+import TeamPage from './pages/TeamPage'
 
 function App() {
 
@@ -20,11 +21,11 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/Teams" element={<Teams />} />
         <Route path="/Players" element={<Players />} />
+        <Route path="/TeamPage/:id" element={<TeamPage />} />
         <Route path="*" element={<h1>Page Not Found</h1>} />
       </Routes>
       <Footer/>
     </Router>
-    //footer
   )
 }
 

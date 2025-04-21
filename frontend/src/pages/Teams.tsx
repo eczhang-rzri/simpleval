@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddTeamForm from '@/components/AddTeamForm';
 
@@ -17,6 +18,7 @@ interface Team {
 }
 
 const Teams = () => {
+  const navigate = useNavigate();
   const [teams, setTeams] = useState<Team[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [isEditing, setIsEditing] = useState<Boolean>(false);
@@ -203,7 +205,8 @@ const Teams = () => {
                     <TableCell>{team.status}</TableCell>
                     <TableCell>
                       <Button variant="contained" onClick={() => handleEditTeam(team)} sx={{ mr: 1 }}>Edit</Button>
-                      <Button variant="contained" color="error" onClick={() => handleDeleteTeam(team.team_id!)}>Delete</Button>
+                      <Button variant="contained" color="error" onClick={() => handleDeleteTeam(team.team_id!)} sx={{ mr: 1 }}>Delete</Button>
+                      <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}>Team Page</Button>
                     </TableCell>
                   </TableRow>
                 ))
