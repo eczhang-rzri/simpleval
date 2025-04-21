@@ -10,10 +10,10 @@ interface Team {
     team_id?: number; // Make optional for new teams
     name: string;
     team_code: string;
+    logo?: string; 
     region: string;
     status: string;
     record: string;
-    logo?: string; 
 }
 
 const Teams = () => {
@@ -35,10 +35,10 @@ const Teams = () => {
                 team_id: team.id, // Map id to team_id
                 name: team.name, // Map name to name
                 team_code: team.team_code,
+                logo: team.logo || null, // Default to null if missing
                 region: team.region,
                 status: team.status,
                 record: team.record || '0-0', // Default if missing
-                logo: team.logo
             })) : [];
             
             setTeams(mappedTeams);
@@ -117,9 +117,10 @@ const Teams = () => {
       const teamData = {
         name: updatedTeam.name,
         team_code: updatedTeam.team_code,
+        logo: updatedTeam.logo || null,
         region: updatedTeam.region,
         status: updatedTeam.status,
-        logo: updatedTeam.logo || null,
+        record: updatedTeam.record || '0-0', // Default if missing
       };
       
       // Updated URL to match backend
@@ -130,10 +131,10 @@ const Teams = () => {
         team_id: response.data.id,
         name: response.data.name,
         team_code: response.data.team_code,
+        logo: response.data.logo || null,
         region: response.data.region,
         status: response.data.status,
         record: response.data.record || '0-0',
-        logo: response.data.logo
       };
       
       setTeams(prevTeams => prevTeams.map(team => 
@@ -150,11 +151,7 @@ const Teams = () => {
 
   const handleDeleteTeam = async (team_id: number) => {
     try {
-      // Your backend doesn't have a delete endpoint yet
-      // We'll need to add that to the backend first
-      console.warn("Delete endpoint not implemented in backend");
-      
-      // For now, just remove from the local state
+      await axios.delete(`/teams/${team_id}`);
       setTeams(prevTeams => prevTeams.filter(team => team.team_id !== team_id));
     } catch (error) {
       console.error("Error deleting team:", error);

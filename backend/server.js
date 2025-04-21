@@ -82,8 +82,8 @@ app.get('/teams/:id', async (req, res) => {
 //POST new team
 app.post('/teams', async (req, res) => {
   try {
-    const { name, team_code, logo, region, status } = req.body;
-    const newTeam = await Teams.create({ name, team_code, logo, region, status });
+    const { name, team_code, logo, region, record, status } = req.body;
+    const newTeam = await Teams.create({ name, team_code, logo, region, record, status });
     res.status(201).json(newTeam);
   } catch (error) {
     console.error('Error creating team:', error);
@@ -94,8 +94,8 @@ app.post('/teams', async (req, res) => {
 //PUT update team by id
 app.put('/teams/:id', async (req, res) => {
   try {
-    const { name, team_code, logo, region, status } = req.body;
-    const [updated] = await Teams.update({ name, team_code, logo, region, status }, {
+    const { name, team_code, logo, region, record, status } = req.body;
+    const [updated] = await Teams.update({ name, team_code, logo, region, record, status }, {
       where: { id: req.params.id }
     });
     if (updated) {

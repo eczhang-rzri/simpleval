@@ -5,10 +5,10 @@ interface Team {
   team_id?: number;
   name: string;
   team_code: string;
+  logo?: string;
   region: string;
   status: string;
   record: string;
-  logo?: string;
 }
 
 interface AddTeamFormProps {
@@ -27,10 +27,10 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
   const [formData, setFormData] = useState<Team>({
     name: '',
     team_code: '',
+    logo: '',
     region: '',
     status: 'active',
     record: '0-0',
-    logo: ''
   });
 
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
@@ -44,10 +44,10 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
       setFormData({
         name: '',
         team_code: '',
+        logo: '',
         region: '',
         status: 'active',
         record: '0-0',
-        logo: ''
       });
     }
   }, [team, isEditing]);
@@ -120,10 +120,10 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
         setFormData({
           name: '',
           team_code: '',
+          logo: '',
           region: '',
           status: 'active',
           record: '0-0',
-          logo: ''
         });
       }
     }
@@ -152,6 +152,15 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
         error={!!formErrors.team_code}
         helperText={formErrors.team_code}
       />
+
+      <TextField
+        label="Logo URL"
+        name="logo"
+        value={formData.logo || ''}
+        onChange={handleChange}
+        fullWidth
+        placeholder="https://example.com/logo.png"
+      />
       
       <TextField
         label="Region"
@@ -171,16 +180,7 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
         onChange={handleChange}
         fullWidth
         placeholder="0-0"
-      />
-      
-      <TextField
-        label="Logo URL"
-        name="logo"
-        value={formData.logo || ''}
-        onChange={handleChange}
-        fullWidth
-        placeholder="https://example.com/logo.png"
-      />
+      />     
       
       <FormControl fullWidth error={!!formErrors.status}>
         <InputLabel id="status-label">Status</InputLabel>
@@ -192,9 +192,8 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
           onChange={handleSelectChange}
           required
         >
-          <MenuItem value="active">Active</MenuItem>
-          <MenuItem value="inactive">Inactive</MenuItem>
-          <MenuItem value="pending">Pending</MenuItem>
+          <MenuItem value="Active">Active</MenuItem>
+          <MenuItem value="Archived">Archived</MenuItem>
         </Select>
         {formErrors.status && (
           <Typography color="error" variant="caption">
