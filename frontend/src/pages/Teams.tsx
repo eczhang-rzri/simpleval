@@ -31,15 +31,19 @@ const Teams = () => {
             const response = await axios.get('/teams');
             
             // Map the response data to match our frontend model
-            const mappedTeams = Array.isArray(response.data) ? response.data.map((team: any) => ({
-                team_id: team.id, // Map id to team_id
-                name: team.name, // Map name to name
-                team_code: team.team_code,
-                logo: team.logo || null, // Default to null if missing
-                region: team.region,
-                status: team.status,
-                record: team.record || '0-0', // Default if missing
-            })) : [];
+            const mappedTeams = Array.isArray(response.data)
+              ? response.data
+                  .map((team: any) => ({
+                    team_id: team.id,
+                    name: team.name,
+                    team_code: team.team_code,
+                    logo: team.logo || null,
+                    region: team.region,
+                    status: team.status,
+                    record: team.record || '0-0',
+                  }))
+                  .sort((a, b) => a.name.localeCompare(b.name)) // 👈 Sort by name
+              : [];
             
             setTeams(mappedTeams);
         } catch (err) {

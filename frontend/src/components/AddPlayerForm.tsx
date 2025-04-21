@@ -176,13 +176,22 @@ const AddPlayerForm: React.FC<AddPlayerFormProps> = ({
         helperText={formErrors.real_name}
       />
 
-      <TextField
-        label="Role"
-        name="role"
-        value={formData.role || ''}
-        onChange={handleChange}
-        placeholder="e.g. Tank, DPS"
-      />
+      <FormControl fullWidth>
+        <InputLabel id="role-label">Role</InputLabel>
+        <Select
+          labelId="role-label"
+          name="role"
+          value={formData.role || ''}
+          label="Role"
+          onChange={handleSelectChange}
+        >
+          <MenuItem value="Duelist">Duelist</MenuItem>
+          <MenuItem value="Initiator">Initiator</MenuItem>
+          <MenuItem value="Controller">Controller</MenuItem>
+          <MenuItem value="Sentinel">Sentinel</MenuItem>
+          <MenuItem value="Flex">Flex</MenuItem>
+        </Select>
+      </FormControl>
 
       <TextField
         label="Country Name"

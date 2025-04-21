@@ -24,43 +24,71 @@ const Players = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [teams, setTeams] = useState<{ team_id: number; name: string }[]>([]);
 
-  useEffect(() => {
-    const fetchPlayers = async () => {
-        try {
-            setLoading(true);
-            // Updated URL to match backend
-            const response = await axios.get('/players');
-            
-            // Map the response data to match our frontend model
-            const mappedPlayers = Array.isArray(response.data) ? response.data.map((player: any) => ({
-              player_id: player.id, // Map id to player_id
+  const fetchPlayers = async () => {
+    try {
+        setLoading(true);
+        // Updated URL to match backend
+        const response = await axios.get('/players');
+        
+        // Map the response data to match our frontend model
+        const mappedPlayers = Array.isArray(response.data)
+          ? response.data.map((player: any) => ({
+              player_id: player.id,
               in_game_name: player.in_game_name,
               real_name: player.real_name,
               role: player.role,
               country_name: player.country_name,
               country_flag_code: player.country_flag_code,
-              profile_picture: player.profile_picture || null, // Default to null if missing
+              profile_picture: player.profile_picture || null,
               status: player.status,
-              team_id: player.team_id || null, // Default if missing
-            })) : [];
-            
-            setPlayers(mappedPlayers);
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err);
-                console.error("Error fetching players:", err);
-            } else {
-                console.error("Unknown error:", err);
-            }
-            setPlayers([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+              team_id: player.team_id || null,
+            })).sort((a, b) => a.in_game_name.localeCompare(b.in_game_name)) // Sort alphabetically
+          : [];
 
-    fetchPlayers();
+        setPlayers(mappedPlayers);
+    } catch (err) {
+        if (err instanceof Error) {
+            setError(err);
+            console.error("Error fetching players:", err);
+        } else {
+            console.error("Unknown error:", err);
+        }
+        setPlayers([]);
+    } finally {
+        setLoading(false);
+    }
+};
+
+  const fetchTeams = async () => {
+    try {
+      const response = await axios.get('/teams');  // Update if needed
+      const teamList = Array.isArray(response.data)
+        ? response.data.map((team: any) => ({
+            team_id: team.id, // Map id to team_id
+            name: team.name,
+          }))
+        : [];
+      setTeams(teamList);
+    } catch (err) {
+      console.error("Error fetching teams:", err);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await fetchPlayers();  // Fetch players data
+      await fetchTeams();    // Fetch teams data
+    };
+    fetchData();
   }, []);
+
+  // Helper to get team name
+  const getTeamName = (team_id?: number) => {
+    const team = teams.find(t => t.team_id === team_id);
+    return team ? team.name : 'N/A';
+  };
 
   const handleAddPlayer = async (newPlayer: Player) => {
     try {
@@ -194,6 +222,7 @@ const Players = () => {
               <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
                 <TableCell sx={{color: '#f9f9f9'}}>Name</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Real Name</TableCell>
+                <TableCell sx={{color: '#f9f9f9'}}>Team</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Role</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Country</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Status</TableCell>
@@ -206,6 +235,7 @@ const Players = () => {
                   <TableRow key={player.player_id}>
                     <TableCell>{player.in_game_name}</TableCell>
                     <TableCell>{player.real_name}</TableCell>
+                    <TableCell>{getTeamName(player.team_id)}</TableCell>
                     <TableCell>{player.role}</TableCell>
                     <TableCell>{player.country_name}</TableCell>
                     <TableCell>{player.status}</TableCell>

@@ -162,16 +162,26 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
         placeholder="https://example.com/logo.png"
       />
       
-      <TextField
-        label="Region"
-        name="region"
-        value={formData.region}
-        onChange={handleChange}
-        required
-        fullWidth
-        error={!!formErrors.region}
-        helperText={formErrors.region}
-      />
+      <FormControl fullWidth required error={!!formErrors.region}>
+        <InputLabel id="region-label">Region</InputLabel>
+        <Select
+          labelId="region-label"
+          name="region"
+          value={formData.region}
+          label="Region"
+          onChange={handleSelectChange}
+        >
+          <MenuItem value="Americas">Americas</MenuItem>
+          <MenuItem value="EMEA">EMEA</MenuItem>
+          <MenuItem value="Pacific">Pacific</MenuItem>
+          <MenuItem value="China">China</MenuItem>
+        </Select>
+        {formErrors.region && (
+          <Typography color="error" variant="caption">
+            {formErrors.region}
+          </Typography>
+        )}
+      </FormControl>
       
       <TextField
         label="Record"
