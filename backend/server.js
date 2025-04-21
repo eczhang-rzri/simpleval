@@ -127,6 +127,123 @@ app.delete('/teams/:id', async (req, res) => {
   }
 });
 
+//Define player model
+const Players = sequelize.define('players', {
+  in_game_name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  real_name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  role: {
+    type: Sequelize.STRING,
+    allowNull: true
+  },
+  country_name: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  country_flag_code: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  profile_picture: {
+    type: Sequelize.STRING,
+    allowNull: true
+  },
+  status: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  team_id: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Teams,
+      key: 'id'
+    }
+  }
+}, {
+  tableName: 'players',
+  timestamps: false
+});
+
+//GET all players
+app.get('/players', async (req, res) => {
+  try {
+    const players = await Players.findAll();
+    res.json(players);
+  } catch (error) {
+    console.error('Error fetching players:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//GET player by id
+app.get('/players/:id', async (req, res) => {
+  try {
+    const team = await Players.findByPk(req.params.id);
+    if (team) {
+      res.json(team);
+    } else {
+      res.status(404).json({ error: 'Player not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching team:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//POST new player
+app.post('/players', async (req, res) => {
+  try {
+    const { in_game_name, real_name, role, country_name, country_flag_code, profile_picture, status, team_id } = req.body;
+    const team = await Teams.findByPk(team_id);
+    const newPlayer = await Players.create({ in_game_name, real_name, role, country_name, country_flag_code, profile_picture, status, team_id });
+    res.status(201).json(newPlayer);
+  } catch (error) {
+    console.error('Error creating player:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//PUT update player by id
+app.put('/players/:id', async (req, res) => {
+  try {
+    const { in_game_name, real_name, role, country_name, country_flag_code, profile_picture, status, team_id } = req.body;
+    const [updated] = await Players.update({ in_game_name, real_name, role, country_name, country_flag_code, profile_picture, status, team_id }, {
+      where: { id: req.params.id }
+    });
+    if (updated) {
+      const updatedPlayer = await Players.findByPk(req.params.id);
+      res.json(updatedPlayer);
+    } else {
+      res.status(404).json({ error: 'Player not found' });
+    }
+  } catch (error) {
+    console.error('Error updating player:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//DELETE player by id
+app.delete('/players/:id', async (req, res) => {
+  try {
+    const deleted = await Players.destroy({
+      where: { id: req.params.id }
+    });
+    if (deleted) {
+      res.status(204).send(); // No content response on successful delete
+    } else {
+      res.status(404).json({ error: 'Team not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting player:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Test the database connection
 sequelize.authenticate()
   .then(() => console.log('Database connected successfully'))

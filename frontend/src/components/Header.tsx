@@ -15,6 +15,9 @@ export default function Header() {
                 <Button component={Link} to="/teams" color="inherit">
                     Teams
                 </Button>
+                <Button component={Link} to="/players" color="inherit">
+                    Players
+                </Button>
             </Toolbar>
         </AppBar>
     );

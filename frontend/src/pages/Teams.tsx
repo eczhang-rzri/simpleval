@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddTeamForm from '@/components/AddTeamForm';
 
-// Configure Axios to use your backend server URL
+// Configure Axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
 
 interface Team {
@@ -69,14 +69,14 @@ const Teams = () => {
         region: newTeam.region,
         status: newTeam.status,
         logo: newTeam.logo || null,
-        // Don't include record as it's not in your backend model
+        record: newTeam.record || '0-0', // Default if missing
       };
       
       // Updated URL to match backend
       const response = await axios.post('/teams', teamData);
       console.log("Add team response:", response);
       
-      // Map the response to match our frontend model
+      // Map the response to match frontend model
       const addedTeam = {
         team_id: response.data.id,
         name: response.data.name,
@@ -126,7 +126,7 @@ const Teams = () => {
       // Updated URL to match backend
       const response = await axios.put(`/teams/${updatedTeam.team_id}`, teamData);
       
-      // Map the response to match our frontend model
+      // Map the response to match frontend model
       const updatedTeamFromResponse = {
         team_id: response.data.id,
         name: response.data.name,
@@ -165,7 +165,7 @@ const Teams = () => {
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
-      <Typography variant="h5" gutterBottom>Teams Table</Typography>
+      <Typography variant="h5" gutterBottom>All Teams</Typography>
       
       {error && (
         <Alert severity="error" onClose={clearError} sx={{ mb: 2 }}>
