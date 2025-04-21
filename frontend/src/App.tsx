@@ -11,6 +11,7 @@ import Home from './pages/Home'
 import Teams from './pages/Teams'
 import Players from './pages/Players'
 import TeamPage from './pages/TeamPage'
+import PlayerPage from './pages/PlayerPage'
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
         <Route path="/Teams" element={<Teams />} />
         <Route path="/Players" element={<Players />} />
         <Route path="/TeamPage/:id" element={<TeamPage />} />
+        <Route path="/PlayerPage/:id" element={<PlayerPage />} />
         <Route path="*" element={<h1>Page Not Found</h1>} />
       </Routes>
       <Footer/>

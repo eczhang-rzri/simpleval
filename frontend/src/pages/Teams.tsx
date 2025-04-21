@@ -204,9 +204,9 @@ const Teams = () => {
                     <TableCell>{team.record}</TableCell>
                     <TableCell>{team.status}</TableCell>
                     <TableCell>
+                      <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}  sx={{ mr: 1 }}>Team Page</Button>
                       <Button variant="contained" onClick={() => handleEditTeam(team)} sx={{ mr: 1 }}>Edit</Button>
-                      <Button variant="contained" color="error" onClick={() => handleDeleteTeam(team.team_id!)} sx={{ mr: 1 }}>Delete</Button>
-                      <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}>Team Page</Button>
+                      <Button variant="contained" color="error" onClick={() => handleDeleteTeam(team.team_id!)}>Delete</Button>
                     </TableCell>
                   </TableRow>
                 ))

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddPlayerForm from '@/components/AddPlayerForm';
 
@@ -19,6 +20,7 @@ interface Player {
 }
 
 const Players = () => {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState<Player[]>([]);
   const [error, setError] = useState<Error | null>(null);
   const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -240,6 +242,7 @@ const Players = () => {
                     <TableCell>{player.country_name}</TableCell>
                     <TableCell>{player.status}</TableCell>
                     <TableCell>
+                      <Button variant="contained" color="warning" onClick={() => navigate(`/PlayerPage/${player.player_id}`)}  sx={{ mr: 1 }}>Player Page</Button>
                       <Button variant="contained" onClick={() => handleEditPlayer(player)} sx={{ mr: 1 }}>Edit</Button>
                       <Button variant="contained" color="error" onClick={() => handleDeletePlayer(player.player_id!)}>Delete</Button>
                     </TableCell>

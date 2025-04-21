@@ -18,7 +18,6 @@ interface Team {
 const TeamPage = () => {
   const { id } = useParams<{ id: string }>(); // Get the team ID from the URL
   const [team, setTeam] = useState<Team | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
