@@ -1,0 +1,21 @@
+import React from 'react'
+import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { Link } from "react-router-dom";
+
+export default function Header() {
+    return (
+        <AppBar position="fixed" className="header" sx={{backgroundColor:"#144e6b"}} >
+            <Toolbar className="toolbar">
+                <Box sx={{ flexGrow: 1, textAlign: 'left' }}>
+                    <Typography variant="h4">SimpleVAL</Typography>
+                </Box>
+                <Button component={Link} to="/" color="inherit">
+                    Home
+                </Button>
+                <Button component={Link} to="/teams" color="inherit">
+                    Teams
+                </Button>
+            </Toolbar>
+        </AppBar>
+    );
+}
