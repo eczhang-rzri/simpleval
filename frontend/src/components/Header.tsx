@@ -6,7 +6,10 @@ export default function Header() {
     return (
         <AppBar position="fixed" className="header" sx={{backgroundColor:"#144e6b"}} >
             <Toolbar className="toolbar">
-                <Box sx={{ flexGrow: 1, textAlign: 'left' }}>
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', textAlign: 'left', gap: 2 }}>
+                    <Box>
+                        <img src={'/simpleval.png'} alt={'SimpleVAL logo'} width={30} />
+                    </Box>
                     <Typography variant="h4">SimpleVAL</Typography>
                 </Box>
                 <Button component={Link} to="/" color="inherit">
