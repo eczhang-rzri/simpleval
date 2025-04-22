@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
+import 'flag-icons/css/flag-icons.min.css'; // Import flag icons CSS
 
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
 
@@ -60,7 +61,13 @@ const PlayerPage = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         <Typography variant="h3" sx={{ fontWeight: 'bold' }}>{player?.in_game_name}</Typography>
         <Typography variant="h5" sx={{ color: 'gray'}}>{player?.real_name}</Typography>
-        <Typography variant="h5">{player?.country_name}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <span 
+            className={`fi fi-${player?.country_flag_code?.toLowerCase()}`} 
+            style={{ width: '1.5em', height: '1em' }} 
+          />
+          <Typography variant="h5">{player?.country_name}</Typography>
+        </Box>
       </Box>
 
     </Box>
