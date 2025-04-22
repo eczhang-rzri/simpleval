@@ -207,7 +207,7 @@ const Players = () => {
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
-      <Typography variant="h5" gutterBottom>All Players</Typography>
+      <Typography variant="h4" gutterBottom>All Players</Typography>
       
       {error && (
         <Alert severity="error" onClose={clearError} sx={{ mb: 2 }}>
@@ -223,7 +223,6 @@ const Players = () => {
             <TableHead>
               <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
                 <TableCell sx={{color: '#f9f9f9'}}>Name</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Real Name</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Team</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Role</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Country</TableCell>
@@ -236,10 +235,14 @@ const Players = () => {
                 players.map((player) => (
                   <TableRow key={player.player_id}>
                     <TableCell>{player.in_game_name}</TableCell>
-                    <TableCell>{player.real_name}</TableCell>
                     <TableCell>{getTeamName(player.team_id)}</TableCell>
                     <TableCell>{player.role}</TableCell>
-                    <TableCell>{player.country_name}</TableCell>
+                    <TableCell>                        
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <span className={`fi fi-${player.country_flag_code?.toLowerCase()}`} style={{ width: '1.5em', height: '1em' }} />
+                        {player.country_name}
+                      </Box>
+                    </TableCell>
                     <TableCell>{player.status}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="warning" onClick={() => navigate(`/PlayerPage/${player.player_id}`)}  sx={{ mr: 1 }}>Player Page</Button>

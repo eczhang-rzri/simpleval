@@ -171,7 +171,7 @@ const Teams = () => {
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
-      <Typography variant="h5" gutterBottom>All Teams</Typography>
+      <Typography variant="h4" gutterBottom>All Teams</Typography>
       
       {error && (
         <Alert severity="error" onClose={clearError} sx={{ mb: 2 }}>
