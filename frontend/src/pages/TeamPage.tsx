@@ -71,7 +71,7 @@ const TeamPage = () => {
             country_flag_code: player.country_flag_code,
             team_id: player.team_id || null,
           };
-        });
+        }).sort((a: Player, b: Player) => a.in_game_name.localeCompare(b.in_game_name)); // Sort by in_game_name
         
         setPlayers(mappedPlayers);
 
