@@ -24,6 +24,7 @@ const Teams = () => {
   const [isEditing, setIsEditing] = useState<Boolean>(false);
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); //for sort order
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -43,8 +44,7 @@ const Teams = () => {
                     region: team.region,
                     status: team.status,
                     record: team.record || '0-0',
-                  }))
-                  .sort((a, b) => a.name.localeCompare(b.name)) // 👈 Sort by name
+                  }))                
               : [];
             
             setTeams(mappedTeams);
@@ -169,6 +169,16 @@ const Teams = () => {
     setError(null);
   };
 
+  const toggleSortOrder = () => {
+    setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+  };
+
+  const sortedTeams = [...teams].sort((a, b) =>
+    sortOrder === 'asc'
+      ? a.name.localeCompare(b.name)
+      : b.name.localeCompare(a.name)
+  );
+
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
       <Typography variant="h4" gutterBottom>All Teams</Typography>
@@ -186,7 +196,10 @@ const Teams = () => {
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
-                <TableCell sx={{color: '#f9f9f9'}}>Team Name</TableCell>
+                <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
+                  Team Name&nbsp;
+                  {sortOrder === 'asc' ? '▲' : '▼'}
+                </TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Team Code</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Region</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Record</TableCell>
@@ -195,8 +208,8 @@ const Teams = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {teams.length > 0 ? (
-                teams.map((team) => (
+              {sortedTeams.length > 0 ? (
+                sortedTeams.map((team) => (
                   <TableRow key={team.team_id}>
                     <TableCell>{team.name}</TableCell>
                     <TableCell>{team.team_code}</TableCell>

@@ -27,6 +27,13 @@ interface Player {
   team_id?: number;
 }
 
+const regionImages: { [key: string]: string } = {
+  Americas: 'https://owcdn.net/img/640f5ab71dfbb.png',
+  EMEA: 'https://owcdn.net/img/65ab59620a233.png',
+  Pacific: 'https://owcdn.net/img/640f5ae002674.png',
+  China: 'https://owcdn.net/img/65dd97cea9a25.png',
+};
+
 
 const TeamPage = () => {
   const { id } = useParams<{ id: string }>(); // Get the team ID from the URL
@@ -56,7 +63,7 @@ const TeamPage = () => {
 
         const playersResponse = await axios.get('/players'); // Fetch all players
         const teamPlayers = playersResponse.data.filter((player: any) => { // Filter players by team_id
-          return parseInt(player.team_id) === parseInt(id);  // Convert `id` to a number
+          return parseInt(player.team_id) === parseInt(id);  // Convert id to a number so comparison works
         });
         
         const mappedPlayers = teamPlayers.map((player: any) => {
@@ -94,7 +101,20 @@ const TeamPage = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
           <Typography variant="h3" sx={{ fontWeight: 'bold' }}>{team?.name}</Typography>
           <Typography variant="h5" sx={{ color: 'gray'}}>{team?.team_code}</Typography>
-          <Typography variant="h5">{team?.region}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {team?.region && (
+              <>
+                {regionImages[team.region] && (
+                  <img
+                    src={regionImages[team.region]}
+                    alt={team.region}
+                    style={{ width: '24px', height: '24px' }}
+                  />
+                )}
+                <Typography variant="h5">{team.region}</Typography>
+              </>
+            )}
+          </Box>
         </Box>
       </Box>
 

@@ -27,7 +27,7 @@ interface Player {
   country_flag_code: string;
   profile_picture?: string;
   status: string;
-  team_id?: number;
+  team_id?: number | null;
 }
 
 interface AddPlayerFormProps {
@@ -101,7 +101,6 @@ const AddPlayerForm: React.FC<AddPlayerFormProps> = ({
     if (!formData.country_name.trim()) errors.country_name = 'Country name is required';
     if (!formData.country_flag_code.trim()) errors.country_flag_code = 'Country flag code is required';
     if (!formData.status.trim()) errors.status = 'Status is required';
-    if (!formData.team_id) errors.team_id = 'Team selection is required';
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -138,7 +137,12 @@ const AddPlayerForm: React.FC<AddPlayerFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSubmit(formData);
+      const cleanedFormData = {
+        ...formData,
+        team_id: formData.team_id === 0 ? null : formData.team_id, // convert "" to null
+      };
+
+      onSubmit(cleanedFormData);
       if (!isEditing) {
         setFormData({
           in_game_name: '',
@@ -244,10 +248,11 @@ const AddPlayerForm: React.FC<AddPlayerFormProps> = ({
         <Select
           labelId="team-label"
           name="team_id"
-          value={formData.team_id ?? ''}
+          value={formData.team_id ?? 0}
           onChange={handleSelectChange}
           disabled={loadingTeams}
         >
+          <MenuItem value={0}><em>No team</em></MenuItem>          
           {loadingTeams ? (
             <MenuItem value="">
               <em>Loading teams...</em>

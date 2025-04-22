@@ -16,7 +16,7 @@ interface Player {
     country_flag_code: string;
     profile_picture?: string;
     status: string;
-    team_id?: number;
+    team_id?: number | null;
 }
 
 const Players = () => {
@@ -87,11 +87,12 @@ const Players = () => {
   }, []);
 
   // Helper to get team name
-  const getTeamName = (team_id?: number) => {
+  const getTeamName = (team_id?: number | null): string => {
+    if (team_id == null) return 'No team'; // Handles both null and undefined
     const team = teams.find(t => t.team_id === team_id);
-    return team ? team.name : 'N/A';
+    return team ? team.name : 'Unknown Team';
   };
-
+  
   const handleAddPlayer = async (newPlayer: Player) => {
     try {
       console.log("Attempting to add player:", newPlayer);
