@@ -21,6 +21,12 @@ export default function Header() {
                 <Button component={Link} to="/players" color="inherit">
                     Players
                 </Button>
+                <Button component={Link} to="/matches" color="inherit">
+                    Matches
+                </Button>
+                <Button component={Link} to="/articles" color="inherit">
+                    Articles
+                </Button>
             </Toolbar>
         </AppBar>
     );

@@ -73,3 +73,9 @@ button:focus-visible {
   height: 150px;
   background-color: #d1d1d1;
 }
+
+.centered-embed {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+}

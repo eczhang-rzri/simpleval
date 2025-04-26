@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Connect to PostgreSQL database
+//Connect to PostgreSQL database
 const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASS, {
   dialect: 'postgres',
   host: process.env.DB_HOST,
@@ -22,7 +22,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   }
 });
 
-// Define team model
+//Define team model
 const Teams = sequelize.define('teams', {
   name: {
     type: Sequelize.STRING,

@@ -26,7 +26,7 @@ const Players = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [teams, setTeams] = useState<{ team_id: number; name: string }[]>([]);
+  const [teams, setTeams] = useState<{ team_id: number; name: string; logo?: string | null }[]>([]);
 
   const fetchPlayers = async () => {
     try {
@@ -70,6 +70,7 @@ const Players = () => {
         ? response.data.map((team: any) => ({
             team_id: team.id, // Map id to team_id
             name: team.name,
+            logo: team.logo || null,
           }))
         : [];
       setTeams(teamList);
@@ -91,6 +92,13 @@ const Players = () => {
     if (team_id == null) return 'No team'; // Handles both null and undefined
     const team = teams.find(t => t.team_id === team_id);
     return team ? team.name : 'Unknown Team';
+  };
+
+  // Helper to get team logo
+  const getTeamLogo = (team_id?: number | null): string => {
+    if (team_id == null) return 'https://www.vlr.gg/img/base/ph/sil.png'; // Default logo
+    const team = teams.find(t => t.team_id === team_id);
+    return team ? team.logo || 'https://www.vlr.gg/img/base/ph/sil.png' : 'https://www.vlr.gg/img/base/ph/sil.png';
   };
   
   const handleAddPlayer = async (newPlayer: Player) => {
@@ -236,7 +244,18 @@ const Players = () => {
                 players.map((player) => (
                   <TableRow key={player.player_id}>
                     <TableCell>{player.in_game_name}</TableCell>
-                    <TableCell>{getTeamName(player.team_id)}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getTeamLogo(player.team_id) && (
+                          <img 
+                            src={getTeamLogo(player.team_id)} 
+                            alt={`${getTeamName(player.team_id)} logo`} 
+                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                          />
+                        )}
+                        {getTeamName(player.team_id)}
+                      </Box>
+                    </TableCell>
                     <TableCell>{player.role}</TableCell>
                     <TableCell>                        
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
