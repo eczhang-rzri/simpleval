@@ -8,7 +8,6 @@ interface Team {
   logo?: string;
   region: string;
   status: string;
-  record: string;
 }
 
 interface AddTeamFormProps {
@@ -30,7 +29,6 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
     logo: '',
     region: '',
     status: 'active',
-    record: '0-0',
   });
 
   const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
@@ -47,7 +45,6 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
         logo: '',
         region: '',
         status: 'active',
-        record: '0-0',
       });
     }
   }, [team, isEditing]);
@@ -123,7 +120,6 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
           logo: '',
           region: '',
           status: 'active',
-          record: '0-0',
         });
       }
     }
@@ -182,15 +178,6 @@ const AddTeamForm: React.FC<AddTeamFormProps> = ({
           </Typography>
         )}
       </FormControl>
-      
-      <TextField
-        label="Record"
-        name="record"
-        value={formData.record}
-        onChange={handleChange}
-        fullWidth
-        placeholder="0-0"
-      />     
       
       <FormControl fullWidth error={!!formErrors.status}>
         <InputLabel id="status-label">Status</InputLabel>

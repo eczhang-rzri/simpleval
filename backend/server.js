@@ -40,10 +40,6 @@ const Teams = sequelize.define('teams', {
     type: Sequelize.STRING,
     allowNull: false
   },
-  record: {
-    type: Sequelize.STRING,
-    allowNull: true
-  },
   status: {
     type: Sequelize.STRING,
     allowNull: false
@@ -82,8 +78,8 @@ app.get('/teams/:id', async (req, res) => {
 //POST new team
 app.post('/teams', async (req, res) => {
   try {
-    const { name, team_code, logo, region, record, status } = req.body;
-    const newTeam = await Teams.create({ name, team_code, logo, region, record, status });
+    const { name, team_code, logo, region, status } = req.body;
+    const newTeam = await Teams.create({ name, team_code, logo, region, status });
     res.status(201).json(newTeam);
   } catch (error) {
     console.error('Error creating team:', error);
@@ -94,8 +90,8 @@ app.post('/teams', async (req, res) => {
 //PUT update team by id
 app.put('/teams/:id', async (req, res) => {
   try {
-    const { name, team_code, logo, region, record, status } = req.body;
-    const [updated] = await Teams.update({ name, team_code, logo, region, record, status }, {
+    const { name, team_code, logo, region, status } = req.body;
+    const [updated] = await Teams.update({ name, team_code, logo, region, status }, {
       where: { id: req.params.id }
     });
     if (updated) {
@@ -180,17 +176,26 @@ app.get('/players', async (req, res) => {
   }
 });
 
-//GET player by id
+//GET player by id with match data
 app.get('/players/:id', async (req, res) => {
   try {
-    const team = await Players.findByPk(req.params.id);
-    if (team) {
-      res.json(team);
+    const player = await Players.findByPk(req.params.id, {
+      include: {
+        model: Matches,
+        //later: can define which attributes to include from match model
+        through: {
+          attributes: ['kills', 'deaths', 'assists']
+        }
+      }
+    });
+
+    if (player) {
+      res.json(player);
     } else {
       res.status(404).json({ error: 'Player not found' });
     }
   } catch (error) {
-    console.error('Error fetching team:', error);
+    console.error('Error fetching player:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -243,6 +248,248 @@ app.delete('/players/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Define match model
+const Matches = sequelize.define('matches', {
+  team_a_id: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Teams,
+      key: 'id'
+    }
+  },
+  team_b_id: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Teams,
+      key: 'id'
+    }
+  },
+  team_a_maps_won: {
+    type: Sequelize.INTEGER,
+    allowNull: true
+  },
+  team_b_maps_won: {
+    type: Sequelize.INTEGER,
+    allowNull: true
+  },
+  date: {
+    type: Sequelize.DATE,
+    allowNull: false
+  },
+}, {
+  tableName: 'matches',
+  timestamps: false
+});
+
+//GET all matches
+app.get('/matches', async (req, res) => {
+  try {
+    const matches = await Matches.findAll();
+    res.json(matches);
+  } catch (error) {
+    console.error('Error fetching matches:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//GET match by id with player data
+app.get('/matches/:id', async (req, res) => {
+  try {
+    const match = await Matches.findByPk(req.params.id, {
+      include: {
+        model: Players,
+        through: {
+          attributes: ['kills', 'deaths', 'assists']
+        }
+      }
+    });
+
+    if (match) {
+      res.json(match);
+    } else {
+      res.status(404).json({ error: 'Match not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching match:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//POST new match
+app.post('/matches', async (req, res) => {
+  try {
+    const { team_a_id, team_b_id, team_a_maps_won, team_b_maps_won, date } = req.body;
+    const newMatch = await Matches.create({ team_a_id, team_b_id, team_a_maps_won, team_b_maps_won, date });
+    res.status(201).json(newMatch);
+  } catch (error) {
+    console.error('Error creating match:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//PUT update match by id
+app.put('/matches/:id', async (req, res) => {
+  try {
+    const { team_a_id, team_b_id, team_a_maps_won, team_b_maps_won, date } = req.body;
+    const [updated] = await Matches.update({ team_a_id, team_b_id, team_a_maps_won, team_b_maps_won, date }, {
+      where: { id: req.params.id }
+    });
+    if (updated) {
+      const updatedMatch = await Matches.findByPk(req.params.id);
+      res.json(updatedMatch);
+    } else {
+      res.status(404).json({ error: 'Match not found' });
+    }
+  } catch (error) {
+    console.error('Error updating match:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//DELETE match by id
+app.delete('/matches/:id', async (req, res) => {
+  try {
+    const deleted = await Matches.destroy({
+      where: { id: req.params.id }
+    });
+    if (deleted) {
+      res.status(204).send(); // No content response on successful delete
+    } else {
+      res.status(404).json({ error: 'Match not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting match:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Define match-player model
+const MatchPlayers = sequelize.define('match_players', {
+  match_id: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Matches,
+      key: 'id'
+    }
+  },
+  player_id: {
+    type: Sequelize.INTEGER,
+    references: {
+      model: Players,
+      key: 'id'
+    }
+  },
+  kills: {
+    type: Sequelize.INTEGER,
+    allowNull: true
+  },
+  deaths: {
+    type: Sequelize.INTEGER,
+    allowNull: true
+  },
+  assists: {
+    type: Sequelize.INTEGER,
+    allowNull: true
+  },
+}, {
+  tableName: 'match_players',
+  timestamps: false
+});
+Players.belongsToMany(Matches, { through: MatchPlayers, foreignKey: 'player_id', otherKey: 'match_id' }); //define many-to-many relationship
+Matches.belongsToMany(Players, { through: MatchPlayers, foreignKey: 'match_id', otherKey: 'player_id' });
+
+// GET match-player by ids (not sure if needed)
+app.get('/match-players/:matchId/:playerId', async (req, res) => {
+  try {
+    const entry = await MatchPlayers.findOne({
+      where: {
+        match_id: req.params.matchId,
+        player_id: req.params.playerId
+      }
+    });
+
+    if (entry) {
+      res.json(entry);
+    } else {
+      res.status(404).json({ error: 'Entry not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching match-player entry:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+// POST new match-player (add player to match)
+app.post('/match-players', async (req, res) => {
+  try {
+    const { match_id, player_id, kills, deaths, assists } = req.body;
+
+    // check if match and player exist
+    const match = await Matches.findByPk(match_id);
+    const player = await Players.findByPk(player_id);
+    if (!match) {
+      return res.status(404).json({ error: 'Match not found' });
+    }
+    if (!player) {
+      return res.status(404).json({ error: 'Player not found' });
+    }
+
+    // check if already exists
+    const existingMatchPlayer = await MatchPlayers.findOne({ where: { match_id: match_id, player_id: player_id }});
+    if (existingMatchPlayer) {
+      return res.status(400).json({ error: 'Player already exists in this match' });
+    }
+
+    const newMatchPlayer = await MatchPlayers.create({ match_id, player_id, kills, deaths, assists });
+    res.status(201).json(newMatchPlayer);
+  } catch (error) {
+    console.error('Error assigning player to match:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+})
+
+// PUT update match-player by id (update player stats in match)
+app.put('/match-players', async (req, res) => {
+  try {
+    const { match_id, player_id, kills, deaths, assists } = req.body;
+    const [updated] = await MatchPlayers.update(
+      { kills, deaths, assists },
+      { where: { match_id, player_id } }
+    );
+
+    if (updated) {
+      const updatedEntry = await MatchPlayers.findOne({ where: { match_id, player_id } });
+      res.json(updatedEntry);
+    } else {
+      res.status(404).json({ error: 'Entry not found' });
+    }
+  } catch (error) {
+    console.error('Error updating match player stats:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE match-player by id (remove player from match)
+app.delete('/match-players/:matchId/:playerId', async (req, res) => {
+  try {
+    const { matchId, playerId } = req.params;
+    const deleted = await MatchPlayers.destroy({
+      where: { match_id: matchId, player_id: playerId }
+    });
+
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: 'Entry not found' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // Test the database connection
 sequelize.authenticate()

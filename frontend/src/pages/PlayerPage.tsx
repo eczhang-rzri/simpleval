@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Box, Typography, Button } from '@mui/material';
 import { useParams } from 'react-router-dom';
-import 'flag-icons/css/flag-icons.min.css'; // Import flag icons CSS
+import 'flag-icons/css/flag-icons.min.css'; // Import flag icons CSS - flag codes repo: https://github.com/lipis/flag-icons/tree/main/flags/4x3
 import { useNavigate } from 'react-router-dom';
 
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';

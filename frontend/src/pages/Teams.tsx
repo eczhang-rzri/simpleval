@@ -14,7 +14,6 @@ interface Team {
     logo?: string; 
     region: string;
     status: string;
-    record: string;
 }
 
 const Teams = () => {
@@ -43,7 +42,6 @@ const Teams = () => {
                     logo: team.logo || null,
                     region: team.region,
                     status: team.status,
-                    record: team.record || '0-0',
                   }))                
               : [];
             
@@ -75,7 +73,6 @@ const Teams = () => {
         region: newTeam.region,
         status: newTeam.status,
         logo: newTeam.logo || null,
-        record: newTeam.record || '0-0', // Default if missing
       };
       
       // Updated URL to match backend
@@ -89,7 +86,6 @@ const Teams = () => {
         team_code: response.data.team_code,
         region: response.data.region,
         status: response.data.status,
-        record: response.data.record || '0-0',
         logo: response.data.logo
       };
       
@@ -126,7 +122,6 @@ const Teams = () => {
         logo: updatedTeam.logo || null,
         region: updatedTeam.region,
         status: updatedTeam.status,
-        record: updatedTeam.record || '0-0', // Default if missing
       };
       
       // Updated URL to match backend
@@ -140,7 +135,6 @@ const Teams = () => {
         logo: response.data.logo || null,
         region: response.data.region,
         status: response.data.status,
-        record: response.data.record || '0-0',
       };
       
       setTeams(prevTeams => prevTeams.map(team => 
@@ -202,7 +196,6 @@ const Teams = () => {
                 </TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Team Code</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Region</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Record</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Status</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
               </TableRow>
@@ -214,7 +207,6 @@ const Teams = () => {
                     <TableCell>{team.name}</TableCell>
                     <TableCell>{team.team_code}</TableCell>
                     <TableCell>{team.region}</TableCell>
-                    <TableCell>{team.record}</TableCell>
                     <TableCell>{team.status}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}  sx={{ mr: 1 }}>Team Page</Button>

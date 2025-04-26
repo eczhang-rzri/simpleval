@@ -12,7 +12,6 @@ interface Team {
   logo?: string; 
   region: string;
   status: string;
-  record: string;
 }
 
 interface Player {
@@ -55,8 +54,7 @@ const TeamPage = () => {
           team_code: response.data.team_code,
           logo: response.data.logo || 'https://www.vlr.gg/img/vlr/tmp/vlr.png',
           region: response.data.region,
-          status: response.data.status,
-          record: response.data.record || '0-0',
+          status: response.data.status
         };
 
         setTeam(mappedTeam);
