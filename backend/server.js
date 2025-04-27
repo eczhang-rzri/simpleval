@@ -390,7 +390,7 @@ Players.belongsToMany(Matches, { through: MatchPlayers, foreignKey: 'player_id',
 Matches.belongsToMany(Players, { through: MatchPlayers, foreignKey: 'match_id', otherKey: 'player_id' });
 
 // GET match-player by ids (not sure if needed)
-app.get('/match-players/:matchId/:playerId', async (req, res) => {
+app.get('/match_players/:matchId/:playerId', async (req, res) => {
   try {
     const entry = await MatchPlayers.findOne({
       where: {
@@ -412,7 +412,7 @@ app.get('/match-players/:matchId/:playerId', async (req, res) => {
 
 
 // POST new match-player (add player to match)
-app.post('/match-players', async (req, res) => {
+app.post('/match_players', async (req, res) => {
   try {
     const { match_id, player_id } = req.body;
 
@@ -443,7 +443,7 @@ app.post('/match-players', async (req, res) => {
 // no PUT method for match-player - out of scope for this project
 
 // DELETE match-player by id (remove player from match)
-app.delete('/match-players/:matchId/:playerId', async (req, res) => {
+app.delete('/match_players/:matchId/:playerId', async (req, res) => {
   try {
     const { matchId, playerId } = req.params;
     const deleted = await MatchPlayers.destroy({
