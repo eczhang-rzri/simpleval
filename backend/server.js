@@ -168,8 +168,17 @@ const Players = sequelize.define('players', {
 //GET all players
 app.get('/players', async (req, res) => {
   try {
-    const players = await Players.findAll();
-    res.json(players);
+    
+    const {team_id} = req.query; //can query for team_id to get players from a specific team
+    if (team_id) { //if provided, get players from a team
+      const team_players = await Players.findAll({ where: { team_id } });
+      return res.json(team_players);
+    }
+    
+    //else get all players
+    const all_players = await Players.findAll();
+    res.json(all_players);
+
   } catch (error) {
     console.error('Error fetching players:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -181,11 +190,7 @@ app.get('/players/:id', async (req, res) => {
   try {
     const player = await Players.findByPk(req.params.id, {
       include: {
-        model: Matches,
-        //later: can define which attributes to include from match model
-        through: {
-          attributes: ['kills', 'deaths', 'assists']
-        }
+        model: Matches
       }
     });
 
@@ -239,7 +244,7 @@ app.delete('/players/:id', async (req, res) => {
       where: { id: req.params.id }
     });
     if (deleted) {
-      res.status(204).send(); // No content response on successful delete
+      res.status(204).send();
     } else {
       res.status(404).json({ error: 'Team not found' });
     }
@@ -298,10 +303,7 @@ app.get('/matches/:id', async (req, res) => {
   try {
     const match = await Matches.findByPk(req.params.id, {
       include: {
-        model: Players,
-        through: {
-          attributes: ['kills', 'deaths', 'assists']
-        }
+        model: Players
       }
     });
 
@@ -380,18 +382,6 @@ const MatchPlayers = sequelize.define('match_players', {
       key: 'id'
     }
   },
-  kills: {
-    type: Sequelize.INTEGER,
-    allowNull: true
-  },
-  deaths: {
-    type: Sequelize.INTEGER,
-    allowNull: true
-  },
-  assists: {
-    type: Sequelize.INTEGER,
-    allowNull: true
-  },
 }, {
   tableName: 'match_players',
   timestamps: false
@@ -424,7 +414,7 @@ app.get('/match-players/:matchId/:playerId', async (req, res) => {
 // POST new match-player (add player to match)
 app.post('/match-players', async (req, res) => {
   try {
-    const { match_id, player_id, kills, deaths, assists } = req.body;
+    const { match_id, player_id } = req.body;
 
     // check if match and player exist
     const match = await Matches.findByPk(match_id);
@@ -442,7 +432,7 @@ app.post('/match-players', async (req, res) => {
       return res.status(400).json({ error: 'Player already exists in this match' });
     }
 
-    const newMatchPlayer = await MatchPlayers.create({ match_id, player_id, kills, deaths, assists });
+    const newMatchPlayer = await MatchPlayers.create({ match_id, player_id });
     res.status(201).json(newMatchPlayer);
   } catch (error) {
     console.error('Error assigning player to match:', error);
@@ -450,26 +440,7 @@ app.post('/match-players', async (req, res) => {
   }
 })
 
-// PUT update match-player by id (update player stats in match)
-app.put('/match-players', async (req, res) => {
-  try {
-    const { match_id, player_id, kills, deaths, assists } = req.body;
-    const [updated] = await MatchPlayers.update(
-      { kills, deaths, assists },
-      { where: { match_id, player_id } }
-    );
-
-    if (updated) {
-      const updatedEntry = await MatchPlayers.findOne({ where: { match_id, player_id } });
-      res.json(updatedEntry);
-    } else {
-      res.status(404).json({ error: 'Entry not found' });
-    }
-  } catch (error) {
-    console.error('Error updating match player stats:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// no PUT method for match-player - out of scope for this project
 
 // DELETE match-player by id (remove player from match)
 app.delete('/match-players/:matchId/:playerId', async (req, res) => {
@@ -490,6 +461,11 @@ app.delete('/match-players/:matchId/:playerId', async (req, res) => {
   }
 });
 
+
+//GET / for testing
+app.get('/', (req, res) => {
+  res.send('SimpleVAL API');
+});
 
 // Test the database connection
 sequelize.authenticate()

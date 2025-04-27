@@ -80,6 +80,17 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
     }));
   };
 
+  // helper function to fetch players for a selected team
+  const getPlayersForTeam = async (team_id: number) => {
+    try {
+      const response = await axios.get(`/players?team_id=${team_id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching players:', error);
+      return [];
+    }
+  }
+
   const validateForm = async () => {
     const newErrors: { [key: string]: string } = {};
     const matchDateTime = new Date(`${formData.date}T${formData.time}`);
@@ -99,8 +110,8 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
     if (formData.team_a_id && formData.team_b_id) {
       try {
         const [a, b] = await Promise.all([
-          axios.get(`/players?team_id=${formData.team_a_id}`),
-          axios.get(`/players?team_id=${formData.team_b_id}`)
+          getPlayersForTeam(formData.team_a_id),
+          getPlayersForTeam(formData.team_b_id)
         ]);
         teamAPlayers = a.data;
         teamBPlayers = b.data;
@@ -149,14 +160,36 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
       date: fullDatetime
     };
 
-    // Submit logic here (e.g., API request)
+    // api calls to submit match data
     try {
       if (isEditing && match) {
         await axios.put(`/matches/${match.match_id}`, matchToSubmit);
-      } else {
-        await axios.post('/matches', matchToSubmit);
-      }
-      onSubmit(matchToSubmit); // Call the onSubmit prop with the match data
+        onSubmit(matchToSubmit); // Call the onSubmit prop with the match data
+      } 
+      else {
+        // Create the match and get the new match_id
+        const response = await axios.post('/matches', matchToSubmit);
+        const createdMatch = response.data;
+        const match_id = createdMatch.match_id;
+
+        // Get 5 players from each team
+        const [teamAPlayersResponse, teamBPlayersResponse] = await Promise.all([
+          axios.get(`/players?team_id=${formData.team_a_id}`),
+          axios.get(`/players?team_id=${formData.team_b_id}`)
+        ]);
+
+        const teamAPlayerIds = teamAPlayersResponse.data.slice(0, 5).map((player: any) => player.player_id);
+        const teamBPlayerIds = teamBPlayersResponse.data.slice(0, 5).map((player: any) => player.player_id);
+
+        // Loop and post each match-player relation
+        for (const player_id of [...teamAPlayerIds, ...teamBPlayerIds]) {
+          await axios.post('/match_players', {
+            match_id,
+            player_id
+          });
+        }     
+        onSubmit(createdMatch);
+    }
     } catch (error) {
       console.error('Error submitting match:', error);
     }

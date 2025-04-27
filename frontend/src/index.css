@@ -65,6 +65,7 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Team logos and profile pictures */
 .img-profile {
   border: 1px solid rgb(59, 59, 59);
   border-radius: 4px;
@@ -74,6 +75,7 @@ button:focus-visible {
   background-color: #d1d1d1;
 }
 
+/* Budibase embed */
 .centered-embed {
   display: flex;
   justify-content: center;
