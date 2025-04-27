@@ -118,42 +118,41 @@ const TeamPage = () => {
 
       <Box sx={{ mt: 4 }}>
         <Typography variant="h6" gutterBottom>Players</Typography>
-
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#002147' }}>
-                  <TableCell sx={{ color: 'white' }}>Name</TableCell>
-                  <TableCell sx={{ color: 'white' }}>Role</TableCell>
-                  <TableCell sx={{ color: 'white' }}>Country</TableCell>
-                  <TableCell sx={{ color: 'white' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {players.length > 0 ? (
-                  players.map((player) => (
-                    <TableRow key={player.player_id}>
-                      <TableCell>{player.in_game_name}</TableCell>
-                      <TableCell>{player.role}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <span className={`fi fi-${player.country_flag_code?.toLowerCase()}`} style={{ width: '1.5em', height: '1em' }} />
-                          {player.country_name}
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="contained" onClick={() => navigate(`/PlayerPage/${Number(player.player_id)}`)} sx={{ mr: 1 }}>View Profile</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center">No players on this team.</TableCell>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ backgroundColor: '#002147' }}>
+                <TableCell sx={{ color: 'white' }}>Name</TableCell>
+                <TableCell sx={{ color: 'white' }}>Role</TableCell>
+                <TableCell sx={{ color: 'white' }}>Country</TableCell>
+                <TableCell sx={{ color: 'white' }}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {players.length > 0 ? (
+                players.map((player) => (
+                  <TableRow key={player.player_id}>
+                    <TableCell>{player.in_game_name}</TableCell>
+                    <TableCell>{player.role}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <span className={`fi fi-${player.country_flag_code?.toLowerCase()}`} style={{ width: '1.5em', height: '1em' }} />
+                        {player.country_name}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="contained" onClick={() => navigate(`/PlayerPage/${Number(player.player_id)}`)} sx={{ mr: 1 }}>View Profile</Button>
+                    </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">No players on this team.</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </Box>
     </div>
 

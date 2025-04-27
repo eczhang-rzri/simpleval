@@ -12,6 +12,7 @@ import Teams from './pages/Teams'
 import Players from './pages/Players'
 import TeamPage from './pages/TeamPage'
 import PlayerPage from './pages/PlayerPage'
+import MatchPage from './pages/MatchPage'
 import Matches from './pages/Matches'
 import Articles from './pages/Articles'
 
@@ -27,6 +28,7 @@ function App() {
         <Route path="/Matches" element={<Matches />} />
         <Route path="/Articles" element={<Articles />} />
         <Route path="/TeamPage/:id" element={<TeamPage />} />
+        <Route path="/MatchPage/:id" element={<MatchPage />} />
         <Route path="/PlayerPage/:id" element={<PlayerPage />} />
         <Route path="*" element={<h1>Page Not Found</h1>} />
       </Routes>

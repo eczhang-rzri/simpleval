@@ -251,7 +251,24 @@ const Matches = () => {
       time,
     };
   };
+
+  // helpers for converting date and time
+  const convertDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  }
   
+  const convertTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
@@ -283,14 +300,14 @@ const Matches = () => {
               {matches.length > 0 ? (
                 matches.map((match) => (
                   <TableRow key={match.match_id}>
-                    <TableCell>{new Date(match.date).toISOString().split('T')[0]}</TableCell>
-                    <TableCell>{new Date(match.date).toTimeString().split(' ')[0].split(':').slice(0, 2).join(':')}</TableCell>
+                    <TableCell>{convertDate(match.date)}</TableCell>
+                    <TableCell>{convertTime(match.date)}</TableCell>
                     <TableCell>{getTeamName(match.team_a_id)}</TableCell>
                     <TableCell>{getTeamName(match.team_b_id)}</TableCell>
                     <TableCell>{getWinningTeam(match)}</TableCell>
                     <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
                     <TableCell>
-                      <Button variant="contained" color="warning" sx={{ mr: 1 }}>Match Page</Button> {/* Add link to match page */}
+                      <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)} sx={{ mr: 1 }}>Match Page</Button> {/* Add link to match page */}
                       <Button variant="contained" onClick={() => handleEditMatch(match)} sx={{ mr: 1 }}>Edit</Button>
                       <Button variant="contained" color="error" onClick={() => handleDeleteMatch(match.match_id!)}>Delete</Button>
                     </TableCell>

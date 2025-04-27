@@ -302,9 +302,10 @@ app.get('/matches', async (req, res) => {
 app.get('/matches/:id', async (req, res) => {
   try {
     const match = await Matches.findByPk(req.params.id, {
-      include: {
-        model: Players
-      }
+      include: [{
+        model: Players,
+        through: {attributes: []} //exclude the join table attributes
+      }]
     });
 
     if (match) {

@@ -74,7 +74,6 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
   }, []);
 
   useEffect(() => {
-    console.log('Editing match:', match); // Debugging line
     if (isEditing && match) {
       const matchDate = new Date(match.date);
       const date = matchDate.toISOString().split('T')[0];
@@ -145,7 +144,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
 
     if (formData.team_a_id && formData.team_b_id) {
       try {
-        const [teamAPlayers, teamBPlayers] = await Promise.all([
+        [teamAPlayers, teamBPlayers] = await Promise.all([
           getPlayersForTeam(formData.team_a_id),
           getPlayersForTeam(formData.team_b_id)
         ]);
@@ -175,10 +174,10 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
       }
   } 
 
-    // Teams must 5 players to play a match
-    if (!teamAHasEnough || !teamBHasEnough) {
-      newErrors.team_a_id = 'Each team must have exactly 5 players';
-      newErrors.team_b_id = 'Each team must have exactly 5 players';
+    // Teams must 5 players to play a match, but only check when adding, not editing
+    if (!isEditing && (!teamAHasEnough || !teamBHasEnough)) {
+      newErrors.team_a_id = 'Each team must have exactly 5 players to play a match';
+      newErrors.team_b_id = 'Each team must have exactly 5 players to play a match';
     }
 
     setErrors(newErrors);
@@ -240,13 +239,14 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
 
       <FormControl fullWidth error={!!errors.team_a_id}>
         <InputLabel id="team-a-label">Team A</InputLabel>
+        {/* Disable if loading teams or editing - cannot be edited */}
         <Select
           labelId="team-a-label"
           name="team_a_id"
           value={formData.team_a_id}
           onChange={handleSelectChange}
           fullWidth
-          disabled={loadingTeams}
+          disabled={loadingTeams || isEditing}
           error={!!errors.team_a_id}
         >
           <MenuItem value={0}>Select Team A</MenuItem>
@@ -281,6 +281,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
           value={formData.team_b_id}
           onChange={handleSelectChange}
           fullWidth
+          disabled={loadingTeams || isEditing}
           error={!!errors.team_b_id}
         >
           <MenuItem value={0}>Select Team B</MenuItem>
