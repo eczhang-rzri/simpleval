@@ -75,7 +75,6 @@ const Teams = () => {
         logo: newTeam.logo || null,
       };
       
-      // Updated URL to match backend
       const response = await axios.post('/teams', teamData);
       console.log("Add team response:", response);
       

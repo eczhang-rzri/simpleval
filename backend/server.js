@@ -442,7 +442,26 @@ app.post('/match_players', async (req, res) => {
 
 // no PUT method for match-player - out of scope for this project
 
-// DELETE match-player by id (remove player from match)
+// DELETE all players from match by match id
+app.delete('/match_players/:matchId', async (req, res) => {
+  try {
+    const { matchId } = req.params;
+    const deleted = await MatchPlayers.destroy({
+      where: { match_id: matchId }
+    });
+
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ error: 'Entry not found' });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+})
+
+// DELETE match-player by id (remove specific player from match)
 app.delete('/match_players/:matchId/:playerId', async (req, res) => {
   try {
     const { matchId, playerId } = req.params;

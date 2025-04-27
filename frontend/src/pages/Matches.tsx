@@ -7,15 +7,26 @@ import AddMatchForm from '@/components/AddMatchForm';
 //configure axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
 
-export interface Match {
+interface Match {
   match_id?: number;
   team_a_id: number;
   team_b_id: number;
   team_a_maps_won?: number | null;
   team_b_maps_won?: number | null;
   date: string;
-  time: string;
 }
+
+// Form-level data includes 'time'
+interface MatchFormData {
+  match_id?: number; // Added match_id as an optional property
+  team_a_id: number;
+  team_b_id: number;
+  team_a_maps_won?: number | null;
+  team_b_maps_won?: number | null;
+  date: string;
+  time: string; 
+}
+
 
 const Matches = () => {
   const navigate = useNavigate();
@@ -116,9 +127,27 @@ const Matches = () => {
         date: newMatch.date,
       };
       
-      // Updated URL to match backend
       const response = await axios.post('/matches', matchData);
-      console.log("Add team response:", response);
+      console.log("Add match response:", response);
+      const match_id = response.data.id; // Get the match ID from the response
+
+      // Get 5 players from each team
+      const [teamAPlayersResponse, teamBPlayersResponse] = await Promise.all([
+        axios.get(`/players?team_id=${matchData.team_a_id}`),
+        axios.get(`/players?team_id=${matchData.team_b_id}`)
+      ]);
+
+      const playerIds = [
+        ...teamAPlayersResponse.data.slice(0, 5),
+        ...teamBPlayersResponse.data.slice(0, 5)
+      ].map(player => player.id);
+
+      // Loop and post each match-player relation
+      const matchPlayerPromises = playerIds.map(player_id => {
+        console.log(`Adding match-player relation: match_id=${match_id}, player_id=${player_id}`);
+        return axios.post('/match_players', { match_id, player_id });
+      });
+      await Promise.all(matchPlayerPromises);
       
       // Map the response to match frontend model
       const addedMatch = {
@@ -194,6 +223,7 @@ const Matches = () => {
 
   const handleDeleteMatch = async (match_id: number) => {
     try {
+      await axios.delete(`/match_players/${match_id}`); // Delete match-player relations first
       await axios.delete(`/matches/${match_id}`);
       setMatches(prevMatches => prevMatches.filter(match => match.match_id !== match_id));
     } catch (error) {
@@ -206,6 +236,23 @@ const Matches = () => {
     setError(null);
   };
 
+  const convertMatchToFormData = (match: Match): MatchFormData => {
+    const dateObj = new Date(match.date);
+    const date = dateObj.toISOString().split('T')[0];
+    const time = dateObj.toTimeString().split(':').slice(0, 2).join(':');
+    
+    return {
+      match_id: match.match_id,
+      team_a_id: match.team_a_id,
+      team_b_id: match.team_b_id,
+      team_a_maps_won: match.team_a_maps_won ?? null,
+      team_b_maps_won: match.team_b_maps_won ?? null,
+      date,
+      time,
+    };
+  };
+  
+
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
       <Typography variant="h4" gutterBottom>All Matches</Typography>
@@ -217,13 +264,14 @@ const Matches = () => {
       )}
       
       {loading ? (
-        <Typography>Loading players...</Typography>
+        <Typography>Loading matches...</Typography>
       ) : (
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
                 <TableCell sx={{color: '#f9f9f9'}}>Date</TableCell>
+                <TableCell sx={{color: '#f9f9f9'}}>Time</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Team A</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Team B</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Winner</TableCell>
@@ -235,7 +283,8 @@ const Matches = () => {
               {matches.length > 0 ? (
                 matches.map((match) => (
                   <TableRow key={match.match_id}>
-                    <TableCell>{match.date}</TableCell>
+                    <TableCell>{new Date(match.date).toISOString().split('T')[0]}</TableCell>
+                    <TableCell>{new Date(match.date).toTimeString().split(' ')[0].split(':').slice(0, 2).join(':')}</TableCell>
                     <TableCell>{getTeamName(match.team_a_id)}</TableCell>
                     <TableCell>{getTeamName(match.team_b_id)}</TableCell>
                     <TableCell>{getWinningTeam(match)}</TableCell>
@@ -261,7 +310,7 @@ const Matches = () => {
         <Typography variant="h5" gutterBottom>{isEditing ? "Edit Match" : "Add New Match"}</Typography>
         <AddMatchForm
           onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
-          match={matchToEdit}
+          match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
           isEditing={isEditing}
           onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
         />

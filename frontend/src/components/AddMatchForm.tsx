@@ -1,9 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, SelectChangeEvent } from '@mui/material';
+import { Typography, Box, TextField, MenuItem, Select, InputLabel, FormControl, Button, SelectChangeEvent, FormHelperText } from '@mui/material';
 import axios from 'axios';
-import { Match } from '@/pages/Matches'
 
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
+
+interface Match {
+  match_id?: number;
+  team_a_id: number;
+  team_b_id: number;
+  team_a_maps_won?: number | null;
+  team_b_maps_won?: number | null;
+  date: string;
+}
+
+// Form-level data includes 'time'
+interface MatchFormData {
+  match_id?: number;
+  team_a_id: number;
+  team_b_id: number;
+  team_a_maps_won?: number | null;
+  team_b_maps_won?: number | null;
+  date: string;
+  time: string; 
+}
 
 interface Team {
   id: number;
@@ -11,14 +30,19 @@ interface Team {
 }
 
 interface AddMatchFormProps {
-  match?: Match | null;
+  match?: MatchFormData | null;
   isEditing: boolean;
   onSubmit: (match: Match) => void; // Include onSubmit prop
   onCancel: () => void; // Include onCancel prop
 }
 
-const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProps) => {
-  const [formData, setFormData] = useState<Match>({
+const AddMatchForm: React.FC<AddMatchFormProps> = ({ 
+  onSubmit = () => {},
+  match = null, 
+  isEditing = false, 
+  onCancel = () => {}
+}) => {
+  const [formData, setFormData] = useState<MatchFormData>({
     team_a_id: 0,
     team_b_id: 0,
     team_a_maps_won: null,
@@ -50,14 +74,26 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
   }, []);
 
   useEffect(() => {
+    console.log('Editing match:', match); // Debugging line
     if (isEditing && match) {
       const matchDate = new Date(match.date);
       const date = matchDate.toISOString().split('T')[0];
       const time = matchDate.toTimeString().split(' ')[0];
+      const matchId = match.match_id; // Use match_id if editing
       setFormData({
         ...match,
         date,
-        time
+        time,
+        match_id: matchId
+      });
+    } else {
+      setFormData({
+        team_a_id: 0,
+        team_b_id: 0,
+        team_a_maps_won: null,
+        team_b_maps_won: null,
+        date: '',
+        time: ''
       });
     }
   }, [isEditing, match]);
@@ -101,7 +137,7 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
     if (!formData.time) newErrors.time = 'Time is required';
     if (!formData.team_a_id) newErrors.team_a_id = 'Team A is required';
     if (!formData.team_b_id) newErrors.team_b_id = 'Team B is required';
-    if (formData.team_a_id === formData.team_b_id) newErrors.team_b_id = 'Teams must be different';
+    if (formData.team_a_id === formData.team_b_id) newErrors.team_b_id = 'Selected teams must be different';
 
     // Fetch players if teams are selected
     let teamAPlayers = [];
@@ -109,39 +145,40 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
 
     if (formData.team_a_id && formData.team_b_id) {
       try {
-        const [a, b] = await Promise.all([
+        const [teamAPlayers, teamBPlayers] = await Promise.all([
           getPlayersForTeam(formData.team_a_id),
           getPlayersForTeam(formData.team_b_id)
         ]);
-        teamAPlayers = a.data;
-        teamBPlayers = b.data;
       } catch {
         newErrors.players = 'Error fetching player counts';
       }
     }
 
-    const teamAHasEnough = teamAPlayers.length >= 5;
-    const teamBHasEnough = teamBPlayers.length >= 5;
-    const hasScore = formData.team_a_maps_won !== null || formData.team_b_maps_won !== null;
+    // check if the selected teams have at exactly 5 players
+    const teamAHasEnough = teamAPlayers.length === 5;
+    const teamBHasEnough = teamBPlayers.length === 5;
 
-    // Don't allow setting a score if match is in the future
-    if (matchDateTime > now && hasScore) {
-      newErrors.team_a_maps_won = 'Cannot set a score for a future match';
-      newErrors.team_b_maps_won = 'Cannot set a score for a future match';
-    }
-
-    // Don't allow setting a score if not enough players
-    if ((!teamAHasEnough || !teamBHasEnough) && hasScore) {
-      newErrors.team_a_maps_won = 'Each team must have at least 5 players to record a score';
-      newErrors.team_b_maps_won = 'Each team must have at least 5 players to record a score';
-    }
-
-    // Prevent setting a match with existing score to a future date
-    if (isEditing && match && matchDateTime > now) {
-      const matchHadScore = match.team_a_maps_won !== null || match.team_b_maps_won !== null;
-      if (matchHadScore) {
-        newErrors.date = 'Cannot move a completed match into the future';
+    // Don't allow matches to be set in the future
+    if (matchDateTime > now) {
+      // compare the dates (ignoring time) 
+      let matchDate = new Date(matchDateTime.getFullYear(), matchDateTime.getMonth(), matchDateTime.getDate());
+      let currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
+      // if the dates are the same, check the time
+      if (matchDate.getTime() === currentDate.getTime()) {
+          if (matchDateTime.getTime() > now.getTime()) {
+              newErrors.time = 'Cannot set a match in the future'; //want to attribute error to time only when date is the same
+          }
+      } else {
+          // date is different (future), so attribute error to date
+          newErrors.date = 'Cannot set a match in the future';
       }
+  } 
+
+    // Teams must 5 players to play a match
+    if (!teamAHasEnough || !teamBHasEnough) {
+      newErrors.team_a_id = 'Each team must have exactly 5 players';
+      newErrors.team_b_id = 'Each team must have exactly 5 players';
     }
 
     setErrors(newErrors);
@@ -151,47 +188,27 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isValid = await validateForm();
-    if (!isValid) return;
+    if (await validateForm()) {
+      const matchDateTime = new Date(`${formData.date}T${formData.time}`);
+      const matchId = isEditing ? formData.match_id : undefined; // Use match_id if editing
+      console.log('Match ID:', matchId); // Debugging line 
+      const matchData = {
+        ...formData,
+        date: matchDateTime.toISOString(),
+        match_id: matchId
+      };
+      onSubmit(matchData);
 
-    const fullDatetime = `${formData.date}T${formData.time}`;
-    const matchToSubmit = {
-      ...formData,
-      date: fullDatetime
-    };
-
-    // api calls to submit match data
-    try {
-      if (isEditing && match) {
-        await axios.put(`/matches/${match.match_id}`, matchToSubmit);
-        onSubmit(matchToSubmit); // Call the onSubmit prop with the match data
-      } 
-      else {
-        // Create the match and get the new match_id
-        const response = await axios.post('/matches', matchToSubmit);
-        const createdMatch = response.data;
-        const match_id = createdMatch.match_id;
-
-        // Get 5 players from each team
-        const [teamAPlayersResponse, teamBPlayersResponse] = await Promise.all([
-          axios.get(`/players?team_id=${formData.team_a_id}`),
-          axios.get(`/players?team_id=${formData.team_b_id}`)
-        ]);
-
-        const teamAPlayerIds = teamAPlayersResponse.data.slice(0, 5).map((player: any) => player.player_id);
-        const teamBPlayerIds = teamBPlayersResponse.data.slice(0, 5).map((player: any) => player.player_id);
-
-        // Loop and post each match-player relation
-        for (const player_id of [...teamAPlayerIds, ...teamBPlayerIds]) {
-          await axios.post('/match_players', {
-            match_id,
-            player_id
-          });
-        }     
-        onSubmit(createdMatch);
-    }
-    } catch (error) {
-      console.error('Error submitting match:', error);
+      if (!isEditing) {
+        setFormData({
+          team_a_id: 0,
+          team_b_id: 0,
+          team_a_maps_won: null,
+          team_b_maps_won: null,
+          date: '',
+          time: ''
+        });
+      }
     }
   };
 
@@ -221,7 +238,7 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
         helperText={errors.time}
       />
 
-      <FormControl fullWidth>
+      <FormControl fullWidth error={!!errors.team_a_id}>
         <InputLabel id="team-a-label">Team A</InputLabel>
         <Select
           labelId="team-a-label"
@@ -249,9 +266,14 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
             ))
           )}
         </Select>
+        {errors.team_a_id && (
+          <Typography color="error" variant="caption">
+            {errors.team_a_id}
+          </Typography>
+        )} {/* add error message */}
       </FormControl>
 
-      <FormControl fullWidth>
+      <FormControl fullWidth error={!!errors.team_id}>
         <InputLabel id="team-b-label">Team B</InputLabel>
         <Select
           labelId="team-b-label"
@@ -278,9 +300,14 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
             ))
           )}
         </Select>
+        {errors.team_b_id && (
+          <Typography color="error" variant="caption">
+            {errors.team_b_id}
+          </Typography>
+        )}
       </FormControl>
 
-      <FormControl fullWidth>
+      <FormControl fullWidth error={!!errors.team_a_maps_won}>
         <InputLabel id="team-a-score-label">Team A Maps Won</InputLabel>
         <Select
           labelId="team-a-score-label"
@@ -293,9 +320,14 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
             <MenuItem key={score} value={score}>{score}</MenuItem>
           ))}
         </Select>
+        {errors.team_a_maps_won && (
+          <Typography color="error" variant="caption">
+            {errors.team_a_maps_won}
+          </Typography>
+        )}
       </FormControl>
 
-      <FormControl fullWidth>
+      <FormControl fullWidth error={!!errors.team_b_maps_won}>
         <InputLabel id="team-b-score-label">Team B Maps Won</InputLabel>
         <Select
           labelId="team-b-score-label"
@@ -308,6 +340,11 @@ const AddMatchForm = ({ match, isEditing, onSubmit, onCancel }: AddMatchFormProp
             <MenuItem key={score} value={score}>{score}</MenuItem>
           ))}
         </Select>
+        {errors.team_b_maps_won && (
+          <Typography color="error" variant="caption">
+            {errors.team_b_maps_won}
+          </Typography>
+        )}
       </FormControl>
 
       <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
