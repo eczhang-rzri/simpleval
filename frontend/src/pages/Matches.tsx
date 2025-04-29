@@ -35,7 +35,7 @@ const Matches = () => {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [matchToEdit, setMatchToEdit] = useState<Match | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [teams, setTeams] = useState<{ team_id: number; name: string }[]>([]);
+  const [teams, setTeams] = useState<{ team_id: number; name: string; logo: string; }[]>([]);
 
   const fetchMatches = async () => {
     try {
@@ -55,7 +55,8 @@ const Matches = () => {
             }))
           : [];
 
-        setMatches(mappedMatches);
+        const sortedMatches = mappedMatches.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Sort by date descending 
+        setMatches(sortedMatches);
     } catch (err) {
         if (err instanceof Error) {
             setError(err);
@@ -71,11 +72,12 @@ const Matches = () => {
 
   const fetchTeams = async () => {
     try {
-      const response = await axios.get('/teams');  // Update if needed
+      const response = await axios.get('/teams'); 
       const teamList = Array.isArray(response.data)
         ? response.data.map((team: any) => ({
             team_id: team.id, // Map id to team_id
             name: team.name,
+            logo: team.logo || 'https://www.vlr.gg/img/vlr/tmp/vlr.png'
           }))
         : [];
       setTeams(teamList);
@@ -99,7 +101,14 @@ const Matches = () => {
     return team ? team.name : 'Unknown Team';
   };
 
-  // Helper to get winning team
+  //Helper to get team logo
+  const getTeamLogo = (team_id?: number | null): string => {
+    if (team_id == null) return 'https://www.vlr.gg/img/base/ph/sil.png'; // Default logo
+    const team = teams.find(t => t.team_id === team_id);
+    return team ? team.logo || 'https://www.vlr.gg/img/base/ph/sil.png' : 'https://www.vlr.gg/img/base/ph/sil.png';
+  };
+
+  // Helper to get winning team name
   const getWinningTeam = (match: Match): string => {
     // Handle undefined values explicitly
     const teamAMapsWon = match.team_a_maps_won ?? -1; // Default to -1 if undefined
@@ -111,6 +120,12 @@ const Matches = () => {
     return teamAMapsWon > teamBMapsWon
       ? getTeamName(match.team_a_id)
       : getTeamName(match.team_b_id);
+  };
+
+  // Helper to get winning team's logo
+  const getWinningTeamLogo = (match: Match): string => {
+    const winningTeamId = match.team_a_maps_won! > match.team_b_maps_won! ? match.team_a_id : match.team_b_id;
+    return getTeamLogo(winningTeamId);
   };
 
   
@@ -302,9 +317,42 @@ const Matches = () => {
                   <TableRow key={match.match_id}>
                     <TableCell>{convertDate(match.date)}</TableCell>
                     <TableCell>{convertTime(match.date)}</TableCell>
-                    <TableCell>{getTeamName(match.team_a_id)}</TableCell>
-                    <TableCell>{getTeamName(match.team_b_id)}</TableCell>
-                    <TableCell>{getWinningTeam(match)}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getTeamLogo(match.team_a_id) && (
+                          <img 
+                            src={getTeamLogo(match.team_a_id)} 
+                            alt={`${getTeamName(match.team_a_id)} logo`} 
+                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                          />
+                        )}
+                        {getTeamName(match.team_a_id)}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getTeamLogo(match.team_b_id) && (
+                          <img 
+                            src={getTeamLogo(match.team_b_id)} 
+                            alt={`${getTeamName(match.team_b_id)} logo`} 
+                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                          />
+                        )}
+                        {getTeamName(match.team_b_id)}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {getWinningTeamLogo(match) && (
+                          <img 
+                            src={getWinningTeamLogo(match)} 
+                            alt={`${getWinningTeam(match)} logo`} 
+                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                          />
+                        )}
+                        {getWinningTeam(match)}
+                      </Box>
+                    </TableCell>
                     <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)} sx={{ mr: 1 }}>Match Page</Button> {/* Add link to match page */}

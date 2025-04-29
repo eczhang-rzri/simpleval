@@ -223,6 +223,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
         required
         error={!!errors.date}
         helperText={errors.date}
+        InputLabelProps={{ shrink: true }}
       />
 
       <TextField
@@ -235,6 +236,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
         required
         error={!!errors.time}
         helperText={errors.time}
+        InputLabelProps={{ shrink: true }}
       />
 
       <FormControl fullWidth error={!!errors.team_a_id}>

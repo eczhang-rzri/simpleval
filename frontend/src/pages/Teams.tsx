@@ -16,6 +16,13 @@ interface Team {
     status: string;
 }
 
+const regionImages: { [key: string]: string } = {
+  Americas: 'https://owcdn.net/img/640f5ab71dfbb.png',
+  EMEA: 'https://owcdn.net/img/65ab59620a233.png',
+  Pacific: 'https://owcdn.net/img/640f5ae002674.png',
+  China: 'https://owcdn.net/img/65dd97cea9a25.png',
+};
+
 const Teams = () => {
   const navigate = useNavigate();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -191,7 +198,7 @@ const Teams = () => {
               <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
                 <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
                   Team Name&nbsp;
-                  {sortOrder === 'asc' ? '▲' : '▼'}
+                  {sortOrder === 'asc' ? '▼' : '▲'}
                 </TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Team Code</TableCell>
                 <TableCell sx={{color: '#f9f9f9'}}>Region</TableCell>
@@ -203,9 +210,23 @@ const Teams = () => {
               {sortedTeams.length > 0 ? (
                 sortedTeams.map((team) => (
                   <TableRow key={team.team_id}>
-                    <TableCell>{team.name}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {team.logo && <img src={team.logo} alt={`${team.name} logo`} style={{ width: 30, height: 30, marginRight: 12 }} />}
+                        {team.name}
+                      </Box>
+                    </TableCell>
                     <TableCell>{team.team_code}</TableCell>
-                    <TableCell>{team.region}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <img
+                          src={regionImages[team.region]}
+                          alt={team.region}
+                          style={{ width: 30, height: 30, marginRight: 12 }}
+                        />
+                        {team.region}
+                      </Box>
+                    </TableCell>
                     <TableCell>{team.status}</TableCell>
                     <TableCell>
                       <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}  sx={{ mr: 1 }}>Team Page</Button>

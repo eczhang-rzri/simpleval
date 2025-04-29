@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert, IconButton } from '@mui/material';
 import AddPlayerForm from '@/components/AddPlayerForm';
 
 // Configure Axios to use backend server URL
@@ -27,6 +27,11 @@ const Players = () => {
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [teams, setTeams] = useState<{ team_id: number; name: string; logo?: string | null }[]>([]);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // for sort order
+
+  //table pages
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [playersPerPage] = useState<number>(10); // number of players per paeg
 
   const fetchPlayers = async () => {
     try {
@@ -214,6 +219,35 @@ const Players = () => {
     setError(null);
   };
 
+  const toggleSortOrder = () => {
+    setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    setCurrentPage(1); // Reset to first page on sort change
+  };
+
+  const sortedPlayers = [...players].sort((a, b) =>
+    sortOrder === 'asc'
+      ? a.in_game_name.localeCompare(b.in_game_name)
+      : b.in_game_name.localeCompare(a.in_game_name)
+  );
+
+  //helpers for pagination logic
+  const indexOfLastPlayer = currentPage * playersPerPage;
+  const indexOfFirstPlayer = indexOfLastPlayer - playersPerPage;
+  const currentPlayers = sortedPlayers.slice(indexOfFirstPlayer, indexOfLastPlayer);
+  const totalPages = Math.ceil(players.length / playersPerPage);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
       <Typography variant="h4" gutterBottom>All Players</Typography>
@@ -227,58 +261,89 @@ const Players = () => {
       {loading ? (
         <Typography>Loading players...</Typography>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
-                <TableCell sx={{color: '#f9f9f9'}}>Name</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Team</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Role</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Country</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Status</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {players.length > 0 ? (
-                players.map((player) => (
-                  <TableRow key={player.player_id}>
-                    <TableCell>{player.in_game_name}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getTeamLogo(player.team_id) && (
-                          <img 
-                            src={getTeamLogo(player.team_id)} 
-                            alt={`${getTeamName(player.team_id)} logo`} 
-                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                          />
-                        )}
-                        {getTeamName(player.team_id)}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{player.role}</TableCell>
-                    <TableCell>                        
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <span className={`fi fi-${player.country_flag_code?.toLowerCase()}`} style={{ width: '1.5em', height: '1em' }} />
-                        {player.country_name}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{player.status}</TableCell>
-                    <TableCell>
-                      <Button variant="contained" color="warning" onClick={() => navigate(`/PlayerPage/${player.player_id}`)}  sx={{ mr: 1 }}>Player Page</Button>
-                      <Button variant="contained" onClick={() => handleEditPlayer(player)} sx={{ mr: 1 }}>Edit</Button>
-                      <Button variant="contained" color="error" onClick={() => handleDeletePlayer(player.player_id!)}>Delete</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">No players found</TableCell>
+        <>
+          {/* Pagination controls */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography>
+              Showing {indexOfFirstPlayer + 1} to {Math.min(indexOfLastPlayer, players.length)} of {players.length} players
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton 
+                onClick={goToPreviousPage} 
+                disabled={currentPage === 1}
+                sx={{ color: currentPage === 1 ? 'grey.400' : 'primary.main' }}
+              >
+                ◄ 
+              </IconButton>
+              <Typography sx={{ mx: 2 }}>
+                Page {currentPage} of {totalPages}
+              </Typography>
+              <IconButton 
+                onClick={goToNextPage} 
+                disabled={currentPage === totalPages}
+                sx={{ color: currentPage === totalPages ? 'grey.400' : 'primary.main' }}
+              >
+                ►
+              </IconButton>
+            </Box>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
+                  <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
+                    Name&nbsp;
+                    {sortOrder === 'asc' ? '▼' : '▲'}
+                  </TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Team</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Role</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Country</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Status</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {currentPlayers.length > 0 ? (
+                  currentPlayers.map((player) => (
+                    <TableRow key={player.player_id}>
+                      <TableCell>{player.in_game_name}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {getTeamLogo(player.team_id) && (
+                            <img 
+                              src={getTeamLogo(player.team_id)} 
+                              alt={`${getTeamName(player.team_id)} logo`} 
+                              style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                            />
+                          )}
+                          {getTeamName(player.team_id)}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{player.role}</TableCell>
+                      <TableCell>                        
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <span className={`fi fi-${player.country_flag_code?.toLowerCase()}`} style={{ width: '1.5em', height: '1em' }} />
+                          {player.country_name}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{player.status}</TableCell>
+                      <TableCell>
+                        <Button variant="contained" color="warning" onClick={() => navigate(`/PlayerPage/${player.player_id}`)} sx={{ mr: 1 }}>Player Page</Button>
+                        <Button variant="contained" onClick={() => handleEditPlayer(player)} sx={{ mr: 1 }}>Edit</Button>
+                        <Button variant="contained" color="error" onClick={() => handleDeletePlayer(player.player_id!)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">No players found</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
 
       <Box sx={{ mt: 4 }}>

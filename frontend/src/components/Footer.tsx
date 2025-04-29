@@ -6,7 +6,9 @@ export default function Footer() {
 
     return (
         <footer>
-            <p>&copy; {year} SimpleVAL. All rights reserved.</p>
+            <div> 
+                <p>&copy; {year} SimpleVAL. All rights reserved.</p>
+            </div>
         </footer>
     )
 }

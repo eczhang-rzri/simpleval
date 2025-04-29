@@ -106,8 +106,8 @@ const MatchPage = () => {
           setMatchPlayers(allMatchPlayers);
           
           // Sort players by team
-          const teamAPlayers = allMatchPlayers.filter((player: Player) => player.team_id === matchResponse.data.team_a_id);
-          const teamBPlayers = allMatchPlayers.filter((player: Player) => player.team_id === matchResponse.data.team_b_id);
+          const teamAPlayers = allMatchPlayers.filter((player: Player) => player.team_id === matchResponse.data.team_a_id).sort((a: Player, b: Player) => a.in_game_name.localeCompare(b.in_game_name));
+          const teamBPlayers = allMatchPlayers.filter((player: Player) => player.team_id === matchResponse.data.team_b_id).sort((a: Player, b: Player) => a.in_game_name.localeCompare(b.in_game_name));
           
           setPlayersA(teamAPlayers);
           setPlayersB(teamBPlayers);
@@ -182,7 +182,7 @@ const MatchPage = () => {
               {teamA?.logo && <img src={teamA.logo} alt={`${teamA.name} logo`} className='img-match'/>}
             </Box>
             
-            {/* score - always in the absolute center */}
+            {/* score - always in the absolute center regardless of teams */}
             <Box sx={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
               {/* team A maps won - green if > team B maps won */}
               <Typography
@@ -198,7 +198,7 @@ const MatchPage = () => {
 
               {/* separator (dash) */}
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                –
+              &nbsp;–&nbsp; {/* spaces around the separator */}
               </Typography>
 
               {/* team B maps won - green if > team A maps won */}
@@ -214,9 +214,6 @@ const MatchPage = () => {
               </Typography>
             </Box>
 
-            <Box sx={{ width: '120px', position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex' }}></Box>
-
-            
             {/* team b logo and name */}
             <Box 
               sx={{ display: 'flex', alignItems: 'center', gap: 4, pt: 1, pb: 1, pl: 4, pr: 4, cursor: 'pointer', '&:hover': { backgroundColor: '#f0f0f0' }, marginLeft: 4, justifyContent: 'flex-start', flex: 1 }}
