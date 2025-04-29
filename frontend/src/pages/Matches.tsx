@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddMatchForm from '@/components/AddMatchForm';
+import ProtectedComponent from '@/components/ProtectedComponent';
 
 //configure axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
@@ -370,16 +371,19 @@ const Matches = () => {
           </Table>
         </TableContainer>
       )}
+      
+      <ProtectedComponent>
+        <Box sx={{ mt: 4 }}>
+            <Typography variant="h5" gutterBottom>{isEditing ? "Edit Match" : "Add New Match"}</Typography>
+            <AddMatchForm
+              onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
+              match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
+              isEditing={isEditing}
+              onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
+            />
+          </Box>
+      </ProtectedComponent>
 
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" gutterBottom>{isEditing ? "Edit Match" : "Add New Match"}</Typography>
-        <AddMatchForm
-          onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
-          match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
-          isEditing={isEditing}
-          onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
-        />
-      </Box>
     </Box>
   );
 };

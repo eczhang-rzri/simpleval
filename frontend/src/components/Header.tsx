@@ -1,8 +1,11 @@
 import React from 'react'
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import { Link } from "react-router-dom";
+import { useAuthContext } from '@asgardeo/auth-react';
 
 export default function Header() {
+    const { state, signIn, signOut } = useAuthContext();
+
     return (
         <AppBar position="fixed" className="header" sx={{backgroundColor:"#144e6b"}} >
             <Toolbar className="toolbar" sx={{ gap: 1}}>
@@ -27,6 +30,15 @@ export default function Header() {
                 <Button component={Link} to="/articles" color="inherit">
                     Articles
                 </Button>
+                {state.isAuthenticated ? (
+                    <Button onClick={() => signOut()} color="inherit">
+                        Logout
+                    </Button>
+                ) : (
+                    <Button onClick={() => signIn()} color="inherit">
+                        Login
+                    </Button>
+                )}
             </Toolbar>
         </AppBar>
     );

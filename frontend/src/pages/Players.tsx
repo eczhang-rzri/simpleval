@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert, IconButton } from '@mui/material';
 import AddPlayerForm from '@/components/AddPlayerForm';
+import ProtectedComponent from '@/components/ProtectedComponent';
 
 // Configure Axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
@@ -348,12 +349,14 @@ const Players = () => {
 
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom>{isEditing ? "Edit Player" : "Add New Player"}</Typography>
-        <AddPlayerForm
-          onSubmit={isEditing ? handleUpdatePlayer : handleAddPlayer}
-          player={playerToEdit}
-          isEditing={isEditing}
-          onCancel={() => { setIsEditing(false); setPlayerToEdit(null); }}
-        />
+        <ProtectedComponent>
+            <AddPlayerForm
+            onSubmit={isEditing ? handleUpdatePlayer : handleAddPlayer}
+            player={playerToEdit}
+            isEditing={isEditing}
+            onCancel={() => { setIsEditing(false); setPlayerToEdit(null); }}
+            />
+          </ProtectedComponent>
       </Box>
     </Box>
   );
