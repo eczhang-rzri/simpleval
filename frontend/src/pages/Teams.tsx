@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddTeamForm from '@/components/AddTeamForm';
+import ProtectedComponent from '@/components/ProtectedComponent';
 
 // Configure Axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
@@ -247,12 +248,14 @@ const Teams = () => {
 
       <Box sx={{ mt: 4 }}>
         <Typography variant="h5" gutterBottom>{isEditing ? "Edit Team" : "Add New Team"}</Typography>
-        <AddTeamForm
-          onSubmit={isEditing ? handleUpdateTeam : handleAddTeam}
-          team={teamToEdit}
-          isEditing={isEditing}
-          onCancel={() => { setIsEditing(false); setTeamToEdit(null); }}
-        />
+        <ProtectedComponent>
+          <AddTeamForm
+            onSubmit={isEditing ? handleUpdateTeam : handleAddTeam}
+            team={teamToEdit}
+            isEditing={isEditing}
+            onCancel={() => { setIsEditing(false); setTeamToEdit(null); }}
+          />
+        </ProtectedComponent>
       </Box>
     </Box>
   );

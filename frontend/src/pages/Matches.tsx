@@ -372,17 +372,17 @@ const Matches = () => {
         </TableContainer>
       )}
       
-      <ProtectedComponent>
-        <Box sx={{ mt: 4 }}>
-            <Typography variant="h5" gutterBottom>{isEditing ? "Edit Match" : "Add New Match"}</Typography>
-            <AddMatchForm
-              onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
-              match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
-              isEditing={isEditing}
-              onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
-            />
-          </Box>
-      </ProtectedComponent>
+      <Box sx={{ mt: 4 }}>
+        <Typography variant="h5" gutterBottom>{isEditing ? "Edit Match" : "Add New Match"}</Typography>
+        <ProtectedComponent>
+          <AddMatchForm
+            onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
+            match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
+            isEditing={isEditing}
+            onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
+          />
+        </ProtectedComponent>
+      </Box>
 
     </Box>
   );
