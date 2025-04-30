@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
+import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddMatchForm from '@/components/AddMatchForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
 
@@ -37,6 +37,11 @@ const Matches = () => {
   const [matchToEdit, setMatchToEdit] = useState<Match | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [teams, setTeams] = useState<{ team_id: number; name: string; logo: string; }[]>([]);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // for sort order
+
+  //table pages
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [matchesPerPage] = useState<number>(10); // number of players per page
 
   const fetchMatches = async () => {
     try {
@@ -286,6 +291,35 @@ const Matches = () => {
     });
   }
 
+  const toggleSortOrder = () => {
+    setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    setCurrentPage(1); // Reset to first page on sort change
+  };
+
+  const sortedMatches = [...matches].sort((a, b) =>
+    sortOrder === 'asc'
+      ? new Date(a.date).getTime() - new Date(b.date).getTime()
+      : new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  //helpers for pagination logic
+  const indexOfLastMatch = currentPage * matchesPerPage;
+  const indexOfFirstMatch = indexOfLastMatch - matchesPerPage;
+  const currentPlayers = sortedMatches.slice(indexOfFirstMatch, indexOfLastMatch);
+  const totalPages = Math.ceil(matches.length / matchesPerPage);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
       <Typography variant="h4" gutterBottom>All Matches</Typography>
@@ -299,77 +333,109 @@ const Matches = () => {
       {loading ? (
         <Typography>Loading matches...</Typography>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
-                <TableCell sx={{color: '#f9f9f9'}}>Date</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Time</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Team A</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Team B</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Winner</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Score</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {matches.length > 0 ? (
-                matches.map((match) => (
-                  <TableRow key={match.match_id}>
-                    <TableCell>{convertDate(match.date)}</TableCell>
-                    <TableCell>{convertTime(match.date)}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getTeamLogo(match.team_a_id) && (
-                          <img 
-                            src={getTeamLogo(match.team_a_id)} 
-                            alt={`${getTeamName(match.team_a_id)} logo`} 
-                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                          />
-                        )}
-                        {getTeamName(match.team_a_id)}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getTeamLogo(match.team_b_id) && (
-                          <img 
-                            src={getTeamLogo(match.team_b_id)} 
-                            alt={`${getTeamName(match.team_b_id)} logo`} 
-                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                          />
-                        )}
-                        {getTeamName(match.team_b_id)}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getWinningTeamLogo(match) && (
-                          <img 
-                            src={getWinningTeamLogo(match)} 
-                            alt={`${getWinningTeam(match)} logo`} 
-                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                          />
-                        )}
-                        {getWinningTeam(match)}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
-                    <TableCell>
-                      <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)} sx={{ mr: 1 }}>Match Page</Button> {/* Add link to match page */}
-                      <Button variant="contained" onClick={() => handleEditMatch(match)} sx={{ mr: 1 }}>Edit</Button>
-                      <Button variant="contained" color="error" onClick={() => handleDeleteMatch(match.match_id!)}>Delete</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">No matches found</TableCell>
+        <>
+          {/* Pagination controls */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography>
+              Showing {indexOfFirstMatch + 1} to {Math.min(indexOfLastMatch, matches.length)} of {matches.length} matches
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton 
+                onClick={goToPreviousPage} 
+                disabled={currentPage === 1}
+                sx={{ color: currentPage === 1 ? 'grey.400' : 'primary.main' }}
+              >
+                ◄ 
+              </IconButton>
+              <Typography sx={{ mx: 2 }}>
+                Page {currentPage} of {totalPages}
+              </Typography>
+              <IconButton 
+                onClick={goToNextPage} 
+                disabled={currentPage === totalPages}
+                sx={{ color: currentPage === totalPages ? 'grey.400' : 'primary.main' }}
+              >
+                ►
+              </IconButton>
+            </Box>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
+                  <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
+                    Date&nbsp;
+                    {sortOrder === 'asc' ? '▼' : '▲'}
+                  </TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Time</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Team A</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Team B</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Winner</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Score</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {matches.length > 0 ? (
+                  matches.map((match) => (
+                    <TableRow key={match.match_id}>
+                      <TableCell>{convertDate(match.date)}</TableCell>
+                      <TableCell>{convertTime(match.date)}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {getTeamLogo(match.team_a_id) && (
+                            <img 
+                              src={getTeamLogo(match.team_a_id)} 
+                              alt={`${getTeamName(match.team_a_id)} logo`} 
+                              style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                            />
+                          )}
+                          {getTeamName(match.team_a_id)}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {getTeamLogo(match.team_b_id) && (
+                            <img 
+                              src={getTeamLogo(match.team_b_id)} 
+                              alt={`${getTeamName(match.team_b_id)} logo`} 
+                              style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                            />
+                          )}
+                          {getTeamName(match.team_b_id)}
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {getWinningTeamLogo(match) && (
+                            <img 
+                              src={getWinningTeamLogo(match)} 
+                              alt={`${getWinningTeam(match)} logo`} 
+                              style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                            />
+                          )}
+                          {getWinningTeam(match)}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
+                      <TableCell>
+                        <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)} sx={{ mr: 1 }}>Match Page</Button> {/* Add link to match page */}
+                        <Button variant="contained" onClick={() => handleEditMatch(match)} sx={{ mr: 1 }}>Edit</Button>
+                        <Button variant="contained" color="error" onClick={() => handleDeleteMatch(match.match_id!)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">No matches found</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
+        
       )}
       
       <Box sx={{ mt: 4 }}>

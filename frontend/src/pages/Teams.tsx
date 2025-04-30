@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
+import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddTeamForm from '@/components/AddTeamForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
 
@@ -32,6 +32,10 @@ const Teams = () => {
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); //for sort order
+
+  //table pages
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [teamsPerPage] = useState<number>(10); // number of teams per page
 
   useEffect(() => {
     const fetchTeams = async () => {
@@ -180,6 +184,24 @@ const Teams = () => {
       : b.name.localeCompare(a.name)
   );
 
+  //helpers for pagination logic
+  const indexOfLastTeam = currentPage * teamsPerPage;
+  const indexOfFirstTeam = indexOfLastTeam - teamsPerPage;
+  const currentPlayers = sortedTeams.slice(indexOfFirstTeam, indexOfLastTeam);
+  const totalPages = Math.ceil(teams.length / teamsPerPage);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
   return (
     <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
       <Typography variant="h4" gutterBottom>All Teams</Typography>
@@ -193,57 +215,85 @@ const Teams = () => {
       {loading ? (
         <Typography>Loading teams...</Typography>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
-                <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
-                  Team Name&nbsp;
-                  {sortOrder === 'asc' ? '▼' : '▲'}
-                </TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Team Code</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Region</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Status</TableCell>
-                <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {sortedTeams.length > 0 ? (
-                sortedTeams.map((team) => (
-                  <TableRow key={team.team_id}>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {team.logo && <img src={team.logo} alt={`${team.name} logo`} style={{ width: 30, height: 30, marginRight: 12 }} />}
-                        {team.name}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{team.team_code}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <img
-                          src={regionImages[team.region]}
-                          alt={team.region}
-                          style={{ width: 30, height: 30, marginRight: 12 }}
-                        />
-                        {team.region}
-                      </Box>
-                    </TableCell>
-                    <TableCell>{team.status}</TableCell>
-                    <TableCell>
-                      <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}  sx={{ mr: 1 }}>Team Page</Button>
-                      <Button variant="contained" onClick={() => handleEditTeam(team)} sx={{ mr: 1 }}>Edit</Button>
-                      <Button variant="contained" color="error" onClick={() => handleDeleteTeam(team.team_id!)}>Delete</Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">No teams found</TableCell>
+        <>
+          {/* Pagination controls */}
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography>
+              Showing {indexOfFirstTeam + 1} to {Math.min(indexOfLastTeam, teams.length)} of {teams.length} teams
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <IconButton 
+                onClick={goToPreviousPage} 
+                disabled={currentPage === 1}
+                sx={{ color: currentPage === 1 ? 'grey.400' : 'primary.main' }}
+              >
+                ◄ 
+              </IconButton>
+              <Typography sx={{ mx: 2 }}>
+                Page {currentPage} of {totalPages}
+              </Typography>
+              <IconButton 
+                onClick={goToNextPage} 
+                disabled={currentPage === totalPages}
+                sx={{ color: currentPage === totalPages ? 'grey.400' : 'primary.main' }}
+              >
+                ►
+              </IconButton>
+            </Box>
+          </Box>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
+                  <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
+                    Team Name&nbsp;
+                    {sortOrder === 'asc' ? '▼' : '▲'}
+                  </TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Team Code</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Region</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Status</TableCell>
+                  <TableCell sx={{color: '#f9f9f9'}}>Actions</TableCell>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {sortedTeams.length > 0 ? (
+                  sortedTeams.map((team) => (
+                    <TableRow key={team.team_id}>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          {team.logo && <img src={team.logo} alt={`${team.name} logo`} style={{ width: 30, height: 30, marginRight: 12 }} />}
+                          {team.name}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{team.team_code}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <img
+                            src={regionImages[team.region]}
+                            alt={team.region}
+                            style={{ width: 30, height: 30, marginRight: 12 }}
+                          />
+                          {team.region}
+                        </Box>
+                      </TableCell>
+                      <TableCell>{team.status}</TableCell>
+                      <TableCell>
+                        <Button variant="contained" color="warning" onClick={() => navigate(`/TeamPage/${team.team_id}`)}  sx={{ mr: 1 }}>Team Page</Button>
+                        <Button variant="contained" onClick={() => handleEditTeam(team)} sx={{ mr: 1 }}>Edit</Button>
+                        <Button variant="contained" color="error" onClick={() => handleDeleteTeam(team.team_id!)}>Delete</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} align="center">No teams found</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </>
       )}
 
       <Box sx={{ mt: 4 }}>

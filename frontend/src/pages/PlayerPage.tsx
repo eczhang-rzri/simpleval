@@ -42,6 +42,10 @@ const PlayerPage = () => {
   const [matchTeams, setMatchTeams] = useState<{ team_id: number; name: string; logo: string }[]>([]);
   const navigate = useNavigate();
 
+  // states for AI description
+  const [aiDescription, setAiDescription] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   useEffect(() => {
     if (!id) return;
 
@@ -117,57 +121,118 @@ const PlayerPage = () => {
     fetchPlayer();
   }, [id]);
 
-    // Helper to get team name
-    const getTeamName = (team_id?: number | null): string => {
-      if (team_id == null) return 'No team'; // Handles both null and undefined
-      const team = matchTeams.find(t => t.team_id === team_id);
-      return team ? team.name : 'Unknown Team';
-    };
-  
-    //Helper to get team logo
-    const getTeamLogo = (team_id?: number | null): string => {
-      if (team_id == null) return 'https://www.vlr.gg/img/vlr/tmp/vlr.png'; // Default logo
-      const team = matchTeams.find(t => t.team_id === team_id);
-      return team?.logo || 'https://www.vlr.gg/img/vlr/tmp/vlr.png';
-    };
-  
-    // Helper to get winning team name
-    const getWinningTeam = (match: Match): string => {
-      // Handle undefined values explicitly
-      const teamAMapsWon = match.team_a_maps_won ?? -1; // Default to -1 if undefined
-      const teamBMapsWon = match.team_b_maps_won ?? -1; // Default to -1 if undefined
-    
-      if (teamAMapsWon === -1 || teamBMapsWon === -1) return 'Unknown'; // Handle undefined case
-      if (teamAMapsWon === teamBMapsWon) return 'Draw'; // Handle draw case
-    
-      return teamAMapsWon > teamBMapsWon
-        ? getTeamName(match.team_a_id)
-        : getTeamName(match.team_b_id);
-    };
-  
-    // Helper to get winning team's logo
-    const getWinningTeamLogo = (match: Match): string => {
-      const winningTeamId = match.team_a_maps_won! > match.team_b_maps_won! ? match.team_a_id : match.team_b_id;
-      return getTeamLogo(winningTeamId);
-    };
+  // Helper to get team name
+  const getTeamName = (team_id?: number | null): string => {
+    if (team_id == null) return 'No team'; // Handles both null and undefined
+    const team = matchTeams.find(t => t.team_id === team_id);
+    return team ? team.name : 'Unknown Team';
+  };
 
-    // helpers for converting date and time
-    const convertDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-      });
-    }
+  //Helper to get team logo
+  const getTeamLogo = (team_id?: number | null): string => {
+    if (team_id == null) return 'https://www.vlr.gg/img/vlr/tmp/vlr.png'; // Default logo
+    const team = matchTeams.find(t => t.team_id === team_id);
+    return team?.logo || 'https://www.vlr.gg/img/vlr/tmp/vlr.png';
+  };
+
+  // Helper to get winning team name
+  const getWinningTeam = (match: Match): string => {
+    // Handle undefined values explicitly
+    const teamAMapsWon = match.team_a_maps_won ?? -1; // Default to -1 if undefined
+    const teamBMapsWon = match.team_b_maps_won ?? -1; // Default to -1 if undefined
+  
+    if (teamAMapsWon === -1 || teamBMapsWon === -1) return 'Unknown'; // Handle undefined case
+    if (teamAMapsWon === teamBMapsWon) return 'Draw'; // Handle draw case
+  
+    return teamAMapsWon > teamBMapsWon
+      ? getTeamName(match.team_a_id)
+      : getTeamName(match.team_b_id);
+  };
+
+  // Helper to get winning team's logo
+  const getWinningTeamLogo = (match: Match): string => {
+    const winningTeamId = match.team_a_maps_won! > match.team_b_maps_won! ? match.team_a_id : match.team_b_id;
+    return getTeamLogo(winningTeamId);
+  };
+
+  // helpers for converting date and time
+  const convertDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+  }
+  
+  const convertTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  // Function to generate player summary using AI
+  const generatePlayerDescription = async () => {
+    if (!player) return;
     
-    const convertTime = (dateString: string) => {
-      const date = new Date(dateString);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
+    setIsLoading(true);
+    
+    try {
+      // Create a prompt with player information
+      const recentMatches = matches.slice(0, 5); // Get up to 5 recent matches
+      
+      let prompt = `Generate a maximum 80-word description of a VALORANT esports player for ${player.in_game_name} (real name: ${player.real_name}).
+      Do not include any indication before or after the description that you are an AI or that you are generating a summary. 
+      Only include complete sentences. Do not use bullet points, lists, headers, or any other formatting.
+      Do not include any information that is not in the prompt.`;
+      
+      prompt += ` They are from ${player.country_name} and play the role of ${player.role}.
+      
+      For additional context, here is some more information about each role to use, but only briefly mention the role in the summary:
+      Duelist: Duelists are the ones who take the fight to the enemy and create space for their team. They are often the first to engage in a fight and are set up by their teammates to get kills. Examples: Jett, Reyna, Phoenix, Raze, Yoru.
+      Initiator: Initiators are the ones who gather information and create space for their team to move in with utility like drones and flashes. Examples: Sova, Skye, Breach, KAY/O, Fade.
+      Controller: Controllers are the ones who place smokes and walls to block vision and control the flow of the game. Examples: Brimstone, Omen, Astra, Viper, Harbor.
+      Sentinel: Sentinels are the ones who anchor the site with utility like tripwires or turrets. They are the ones who watch the flanks and hold angles. Examples: Sage, Cypher, Killjoy, Chamber.
+      Flex: Flex players are the ones who can play multiple roles. They are the ones who can adapt to any situation and play whatever role is needed. Examples: Omen, Astra, Viper, Killjoy, Cypher.
+      `;
+      
+      if (team) {
+        prompt += ` They currently play for ${team.name}.`;
+      } else {
+        prompt += ` They are currently not affiliated with any team.`;
+      }
+      
+      if (recentMatches.length > 0) {
+        prompt += ` Their recent match history includes: `;
+        recentMatches.forEach((match, index) => {
+          const teamA = getTeamName(match.team_a_id);
+          const teamB = getTeamName(match.team_b_id);
+          const score = `${match.team_a_maps_won}-${match.team_b_maps_won}`;
+          const winner = getWinningTeam(match);
+          
+          prompt += `${teamA} vs ${teamB} (${score}, winner: ${winner})`;
+          if (index < recentMatches.length - 1) prompt += `, `;
+        });
+      }
+      
+      prompt += ` Format the summary as a player profile that would appear on an esports website.`;
+      
+      // Call the AI endpoint
+      const response = await axios.get('/api/ai-response', {
+        params: { prompt }
       });
+      
+      // Extract the AI-generated text from the response
+      const aiText = response.data
+      setAiDescription(aiText);
+    } catch (err) {
+      console.error("Error generating AI description:", err);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
   return (
     <Box>
@@ -228,7 +293,40 @@ const PlayerPage = () => {
           </Typography>
         )}
       </Box>
+
+      {/* AI Description Section */}
       <Box>
+        <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={generatePlayerDescription}
+            disabled={isLoading}
+            sx={{ mt: 2, width: 'fit-content' }}
+          >
+            {isLoading ? "Loading..." : 'Generate AI Description'}
+        </Button> 
+
+        {/* Display AI-generated description */}
+        {aiDescription && (
+          <Box sx={{ 
+            padding: 2, 
+            backgroundColor: '#f5f5f5', 
+            borderRadius: 2,
+            mt: 2,
+            mb: 2,
+            mx: 2,
+            boxShadow: 1
+          }}>
+            <Typography variant="h6" gutterBottom>Player Profile</Typography>
+            <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+              {aiDescription}
+            </Typography>
+          </Box>
+        )}
+      </Box>
+
+
+      <Box sx={{ mt: 4}}>
         <Typography variant="h6" gutterBottom>Recent Matches</Typography>
         <TableContainer component={Paper}>
           <Table>

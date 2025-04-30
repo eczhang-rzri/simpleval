@@ -3,7 +3,6 @@ const cors = require('cors');
 const { Sequelize } = require('sequelize');
 const axios = require('axios');
 require('dotenv').config();
-const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
 const app = express();
 const PORT = process.env.PORT || 3000;

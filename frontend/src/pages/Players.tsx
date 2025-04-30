@@ -32,7 +32,7 @@ const Players = () => {
 
   //table pages
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [playersPerPage] = useState<number>(10); // number of players per paeg
+  const [playersPerPage] = useState<number>(10); // number of players per page
 
   const fetchPlayers = async () => {
     try {
