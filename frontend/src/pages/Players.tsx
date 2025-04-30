@@ -71,7 +71,7 @@ const Players = () => {
 
   const fetchTeams = async () => {
     try {
-      const response = await axios.get('/teams');  // Update if needed
+      const response = await axios.get('/teams');
       const teamList = Array.isArray(response.data)
         ? response.data.map((team: any) => ({
             team_id: team.id, // Map id to team_id

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 
 //configure axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
@@ -96,16 +96,17 @@ const Home = () => {
 
     // Helper to get winning team name
     const getWinningTeam = (match: Match): string => {
-    // Handle undefined values explicitly
-    const teamAMapsWon = match.team_a_maps_won ?? -1; // Default to -1 if undefined
-    const teamBMapsWon = match.team_b_maps_won ?? -1; // Default to -1 if undefined
+      
+        // Handle undefined values
+      const teamAMapsWon = match.team_a_maps_won ?? -1; // Default to -1 if undefined
+      const teamBMapsWon = match.team_b_maps_won ?? -1; // Default to -1 if undefined
 
-    if (teamAMapsWon === -1 || teamBMapsWon === -1) return 'Unknown'; // Handle undefined case
-    if (teamAMapsWon === teamBMapsWon) return 'Draw'; // Handle draw case
+      if (teamAMapsWon === -1 || teamBMapsWon === -1) return 'Unknown'; // Handle undefined case
+      if (teamAMapsWon === teamBMapsWon) return 'Draw'; // Handle draw case
 
-    return teamAMapsWon > teamBMapsWon
-        ? getTeamName(match.team_a_id)
-        : getTeamName(match.team_b_id);
+      return teamAMapsWon > teamBMapsWon
+          ? getTeamName(match.team_a_id)
+          : getTeamName(match.team_b_id);
     };
 
     // Helper to get winning team's logo
@@ -133,88 +134,87 @@ const Home = () => {
     }
 
     return (
-        <Box>
-            <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
-                <Typography variant='h3' sx={{ mb: 4 }}>Welcome to SimpleVAL</Typography>
-                <Typography variant='h5' sx={{ mb: 1 }}>VALORANT esports tracking made simple.</Typography>
-                <Typography variant='h5'>Stay updated with teams, players, the latest matches.</Typography>
-            </Box>
-            
-            <Box sx={{ mt: 4, p: 4, backgroundColor: '#f9f9f9' }}>
-                <Typography variant="h4" gutterBottom>Recent Matches</Typography>
-                <Button onClick={() => navigate('/Matches')}sx={{ mb: 1 }}>View All Matches</Button>
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
-                                <TableCell sx={{ color: '#f9f9f9'}}>Date</TableCell>
-                                <TableCell sx={{color: '#f9f9f9'}}>Time</TableCell>
-                                <TableCell sx={{color: '#f9f9f9'}}>Team A</TableCell>
-                                <TableCell sx={{color: '#f9f9f9'}}>Team B</TableCell>
-                                <TableCell sx={{color: '#f9f9f9'}}>Winner</TableCell>
-                                <TableCell sx={{color: '#f9f9f9'}}>Score</TableCell>
-                                <TableCell sx={{color: '#f9f9f9'}}></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                        {matches.length > 0 ? (
-                            matches.map((match) => (
-                            <TableRow key={match.match_id}>
-                                <TableCell>{convertDate(match.date)}</TableCell>
-                                <TableCell>{convertTime(match.date)}</TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        {getTeamLogo(match.team_a_id) && (
-                                        <img 
-                                            src={getTeamLogo(match.team_a_id)} 
-                                            alt={`${getTeamName(match.team_a_id)} logo`} 
-                                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                                        />
-                                        )}
-                                        {getTeamName(match.team_a_id)}
-                                    </Box>
-                                </TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        {getTeamLogo(match.team_b_id) && (
-                                        <img 
-                                            src={getTeamLogo(match.team_b_id)} 
-                                            alt={`${getTeamName(match.team_b_id)} logo`} 
-                                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                                        />
-                                        )}
-                                        {getTeamName(match.team_b_id)}
-                                    </Box>
-                                </TableCell>
-                                <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        {getWinningTeamLogo(match) && (
-                                        <img 
-                                            src={getWinningTeamLogo(match)} 
-                                            alt={`${getWinningTeam(match)} logo`} 
-                                            style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
-                                        />
-                                        )}
-                                        {getWinningTeam(match)}
-                                    </Box>
-                                </TableCell>
-                                <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
-                                <TableCell>
-                                    <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)}>Match Page</Button> {/* Add link to match page */}
-                                </TableCell>
-                            </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                            <TableCell colSpan={6} align="center">No matches found</TableCell>
-                            </TableRow>
-                        )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            </Box>
-        </Box>
-
+      <Box>
+          <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
+              <Typography variant='h3' sx={{ mb: 4 }}>Welcome to SimpleVAL</Typography>
+              <Typography variant='h5' sx={{ mb: 1 }}>VALORANT esports tracking made simple.</Typography>
+              <Typography variant='h5'>Stay updated with teams, players, the latest matches.</Typography>
+          </Box>
+          
+          <Box sx={{ mt: 4, p: 4, backgroundColor: '#f9f9f9' }}>
+              <Typography variant="h4" gutterBottom>Recent Matches</Typography>
+              <Button onClick={() => navigate('/Matches')}sx={{ mb: 1 }}>View All Matches</Button>
+              <TableContainer component={Paper}>
+                  <Table>
+                      <TableHead>
+                          <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
+                              <TableCell sx={{ color: '#f9f9f9'}}>Date</TableCell>
+                              <TableCell sx={{color: '#f9f9f9'}}>Time</TableCell>
+                              <TableCell sx={{color: '#f9f9f9'}}>Team A</TableCell>
+                              <TableCell sx={{color: '#f9f9f9'}}>Team B</TableCell>
+                              <TableCell sx={{color: '#f9f9f9'}}>Winner</TableCell>
+                              <TableCell sx={{color: '#f9f9f9'}}>Score</TableCell>
+                              <TableCell sx={{color: '#f9f9f9'}}></TableCell>
+                          </TableRow>
+                      </TableHead>
+                      <TableBody>
+                      {matches.length > 0 ? (
+                          matches.map((match) => (
+                          <TableRow key={match.match_id}>
+                              <TableCell>{convertDate(match.date)}</TableCell>
+                              <TableCell>{convertTime(match.date)}</TableCell>
+                              <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {getTeamLogo(match.team_a_id) && (
+                                      <img 
+                                          src={getTeamLogo(match.team_a_id)} 
+                                          alt={`${getTeamName(match.team_a_id)} logo`} 
+                                          style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                                      />
+                                      )}
+                                      {getTeamName(match.team_a_id)}
+                                  </Box>
+                              </TableCell>
+                              <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {getTeamLogo(match.team_b_id) && (
+                                      <img 
+                                          src={getTeamLogo(match.team_b_id)} 
+                                          alt={`${getTeamName(match.team_b_id)} logo`} 
+                                          style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                                      />
+                                      )}
+                                      {getTeamName(match.team_b_id)}
+                                  </Box>
+                              </TableCell>
+                              <TableCell>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                      {getWinningTeamLogo(match) && (
+                                      <img 
+                                          src={getWinningTeamLogo(match)} 
+                                          alt={`${getWinningTeam(match)} logo`} 
+                                          style={{ width: 30, height: 30, objectFit: 'contain', marginRight: 5 }} 
+                                      />
+                                      )}
+                                      {getWinningTeam(match)}
+                                  </Box>
+                              </TableCell>
+                              <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
+                              <TableCell>
+                                  <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)}>Match Page</Button> {/* Add link to match page */}
+                              </TableCell>
+                          </TableRow>
+                          ))
+                      ) : (
+                          <TableRow>
+                          <TableCell colSpan={6} align="center">No matches found</TableCell>
+                          </TableRow>
+                      )}
+                      </TableBody>
+                  </Table>
+              </TableContainer>
+          </Box>
+      </Box>
     );
 }
 
