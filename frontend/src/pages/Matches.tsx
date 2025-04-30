@@ -304,7 +304,7 @@ const Matches = () => {
   //helpers for pagination logic
   const indexOfLastMatch = currentPage * matchesPerPage;
   const indexOfFirstMatch = indexOfLastMatch - matchesPerPage;
-  const currentPlayers = sortedMatches.slice(indexOfFirstMatch, indexOfLastMatch);
+  const currentMatches = sortedMatches.slice(indexOfFirstMatch, indexOfLastMatch);
   const totalPages = Math.ceil(matches.length / matchesPerPage);
 
   const goToNextPage = () => {
@@ -441,11 +441,11 @@ const Matches = () => {
         <Typography variant="h5" gutterBottom>{isEditing ? "Edit Match" : "Add New Match"}</Typography>
         <ProtectedComponent>
           <AddMatchForm
-            onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
-            match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
-            isEditing={isEditing}
-            onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
-          />
+              onSubmit={isEditing ? handleUpdateMatch : handleAddMatch}
+              match={isEditing && matchToEdit ? convertMatchToFormData(matchToEdit) : null}
+              isEditing={isEditing}
+              onCancel={() => { setIsEditing(false); setMatchToEdit(null); }}
+            />
         </ProtectedComponent>
       </Box>
 

@@ -153,7 +153,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
       }
     }
 
-    // check if the selected teams have at exactly 5 players
+    // check if the selected teams have at least 5 players
     const teamAHasEnough = teamAPlayers.length === 5;
     const teamBHasEnough = teamBPlayers.length === 5;
 
@@ -175,9 +175,9 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
   } 
 
     // Teams must 5 players to play a match, but only check when adding, not editing
-    if (!isEditing && (!teamAHasEnough || !teamBHasEnough)) {
-      newErrors.team_a_id = 'Each team must have exactly 5 players to play a match';
-      newErrors.team_b_id = 'Each team must have exactly 5 players to play a match';
+    if (!isEditing) {
+      if (!teamAHasEnough) newErrors.team_a_id = 'Each team must have exactly 5 players to play a match';
+      if (!teamBHasEnough) newErrors.team_b_id = 'Each team must have exactly 5 players to play a match';
     }
 
     setErrors(newErrors);
