@@ -195,7 +195,7 @@ const PlayerPage = () => {
       Initiator: Initiators are the ones who gather information and create space for their team to move in with utility like drones and flashes. Examples: Sova, Skye, Breach, KAY/O, Fade.
       Controller: Controllers are the ones who place smokes and walls to block vision and control the flow of the game. Examples: Brimstone, Omen, Astra, Viper, Harbor.
       Sentinel: Sentinels are the ones who anchor the site with utility like tripwires or turrets. They are the ones who watch the flanks and hold angles. Examples: Sage, Cypher, Killjoy, Chamber.
-      Flex: Flex players are the ones who can play multiple roles. They are the ones who can adapt to any situation and play whatever role is needed. Examples: Omen, Astra, Viper, Killjoy, Cypher.
+      Flex: Flex players are the ones who play multiple roles for their team. They are the ones who can adapt to any situation and play whatever role is needed.
       `;
       
       if (team) {
