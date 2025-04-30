@@ -28,7 +28,6 @@ interface MatchFormData {
   time: string; 
 }
 
-
 const Matches = () => {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<Match[]>([]);

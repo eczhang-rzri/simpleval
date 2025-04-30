@@ -37,7 +37,6 @@ const Players = () => {
   const fetchPlayers = async () => {
     try {
         setLoading(true);
-        // Updated URL to match backend
         const response = await axios.get('/players');
         
         // Map the response data to match our frontend model

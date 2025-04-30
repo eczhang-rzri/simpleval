@@ -321,6 +321,9 @@ const PlayerPage = () => {
             <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
               {aiDescription}
             </Typography>
+            <Typography variant="caption" sx={{ mt: 1, color: 'gray' }}>
+              Powered by GPT-4o-mini using site data. Not reflective of real player stats. 
+            </Typography>
           </Box>
         )}
       </Box>
