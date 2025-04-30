@@ -11,4 +11,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, 'src'),
     },
   },
+  define: {
+    'process.env.API_URL': JSON.stringify('https://simpleval-api.azurewebsites.net'),
+  }
 })
