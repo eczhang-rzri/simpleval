@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const { Sequelize } = require('sequelize');
+const axios = require('axios');
 require('dotenv').config();
+const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -481,6 +483,63 @@ app.delete('/match_players/:matchId/:playerId', async (req, res) => {
   }
 });
 
+// AI API integration
+app.get('/api/ai-response', async (req, res) => {
+  try {
+    // check for environment variables
+    if (!process.env.AI_ENDPOINT || !process.env.AI_API_KEY) {
+      return res.status(500).json({ error: 'AI API URL or key not set' });
+    }
+
+    // get prompt from query parameters with default value
+    const prompt = req.query.prompt || 'For testing purposes, just respond with the word Working and what model you are.';
+    
+    // Azure OpenAI configuration
+    const endpoint = process.env.AI_ENDPOINT;
+    const apiKey = process.env.AI_API_KEY;
+    const deploymentId = "gpt-4o-mini"; // Update this to your deployment ID
+    
+    // construct full URL including deployment and API version
+    const url = `${endpoint}/openai/deployments/${deploymentId}/chat/completions?api-version=2024-04-01-preview`;
+    
+    // make API request
+    const response = await axios.post(
+      url,
+      {
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1000,
+        temperature: 0.7,
+        top_p: 1.0,
+        frequency_penalty: 0.0,
+        presence_penalty: 0.0
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': apiKey
+        }
+      }
+    );
+    
+    // return the response message content
+    res.json(response.data.choices[0].message.content);
+    
+  } catch (error) {
+    console.error('Error fetching AI response:', error);
+    
+    if (error.response) {
+      console.error('AI service error response:', error.response.data);
+      return res.status(error.response.status).json({ 
+        error: 'AI service error', 
+        details: error.response.data 
+      });
+    } else if (error.request) {
+      return res.status(503).json({ error: 'No response from AI service' });
+    } else {
+      res.status(500).json({ error: 'Internal server error', message: error.message });
+    }
+  }
+});
 
 //GET / for testing
 app.get('/', (req, res) => {
