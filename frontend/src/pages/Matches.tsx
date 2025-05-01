@@ -54,8 +54,8 @@ const Matches = () => {
               match_id: match.id,
               team_a_id: match.team_a_id,
               team_b_id: match.team_b_id,
-              team_a_maps_won: match.team_a_maps_won || null,
-              team_b_maps_won: match.team_b_maps_won || null,
+              team_a_maps_won: match.team_a_maps_won ?? null,
+              team_b_maps_won: match.team_b_maps_won ?? null,
               date: match.date,
               time: match.time,
             }))
@@ -147,8 +147,8 @@ const Matches = () => {
       const matchData = {
         team_a_id: newMatch.team_a_id,
         team_b_id: newMatch.team_b_id,
-        team_a_maps_won: newMatch.team_a_maps_won || null,
-        team_b_maps_won: newMatch.team_b_maps_won || null,
+        team_a_maps_won: newMatch.team_a_maps_won ?? null,
+        team_b_maps_won: newMatch.team_b_maps_won ?? null,
         date: newMatch.date,
       };
       
@@ -179,8 +179,8 @@ const Matches = () => {
         match_id: response.data.id,
         team_a_id: response.data.team_a_id,
         team_b_id: response.data.team_b_id,
-        team_a_maps_won: response.data.team_a_maps_won || null,
-        team_b_maps_won: response.data.team_b_maps_won || null,
+        team_a_maps_won: response.data.team_a_maps_won ?? null,
+        team_b_maps_won: response.data.team_b_maps_won ?? null,
         date: response.data.date,
         time: response.data.time || '', // Ensure the time property is included
       };
@@ -215,8 +215,8 @@ const Matches = () => {
       const matchData = {
         team_a_id: updatedMatch.team_a_id,
         team_b_id: updatedMatch.team_b_id,
-        team_a_maps_won: updatedMatch.team_a_maps_won || null,
-        team_b_maps_won: updatedMatch.team_b_maps_won || null,
+        team_a_maps_won: updatedMatch.team_a_maps_won ?? null,
+        team_b_maps_won: updatedMatch.team_b_maps_won ?? null,
         date: updatedMatch.date,
       };
       
@@ -228,8 +228,8 @@ const Matches = () => {
         match_id: response.data.id,
         team_a_id: response.data.team_a_id,
         team_b_id: response.data.team_b_id,
-        team_a_maps_won: response.data.team_a_maps_won || null,
-        team_b_maps_won: response.data.team_b_maps_won || null,
+        team_a_maps_won: response.data.team_a_maps_won ?? null,
+        team_b_maps_won: response.data.team_b_maps_won ?? null,
         date: response.data.date,
         time: response.data.time || ''
       };
