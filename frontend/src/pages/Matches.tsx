@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
+import { TextField, InputAdornment, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddMatchForm from '@/components/AddMatchForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
 
@@ -37,6 +37,7 @@ const Matches = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [teams, setTeams] = useState<{ team_id: number; name: string; logo: string; }[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // for sort order
+  const [searchQuery, setSearchQuery] = useState<string>(''); // for search query
 
   //table pages
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -73,7 +74,7 @@ const Matches = () => {
     } finally {
         setLoading(false);
     }
-};
+  };
 
   const fetchTeams = async () => {
     try {
@@ -98,6 +99,11 @@ const Matches = () => {
     };
     fetchData();
   }, []);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Helper to get team name
   const getTeamName = (team_id?: number | null): string => {
@@ -133,7 +139,6 @@ const Matches = () => {
     return getTeamLogo(winningTeamId);
   };
 
-  
   const handleAddMatch = async (newMatch: Match) => {
     try {
       console.log("Attempting to add match:", newMatch);
@@ -295,7 +300,17 @@ const Matches = () => {
     setCurrentPage(1); // Reset to first page on sort change
   };
 
-  const sortedMatches = [...matches].sort((a, b) =>
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // filter matches based on search query - by team names
+  const filteredMatches = matches.filter(match =>
+    (getTeamName(match.team_a_id).toLowerCase().includes(searchQuery.toLowerCase()) || 
+     getTeamName(match.team_b_id).toLowerCase().includes(searchQuery.toLowerCase())) // case insensitive
+  );
+
+  const sortedMatches = [...filteredMatches].sort((a, b) =>
     sortOrder === 'asc'
       ? new Date(a.date).getTime() - new Date(b.date).getTime()
       : new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -333,11 +348,31 @@ const Matches = () => {
         <Typography>Loading matches...</Typography>
       ) : (
         <>
-          {/* Pagination controls */}
+          {/* Pagination controls + search */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography>
-              Showing {indexOfFirstMatch + 1} to {Math.min(indexOfLastMatch, matches.length)} of {matches.length} matches
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>
+                Showing {indexOfFirstMatch + 1} to {Math.min(indexOfLastMatch, matches.length)} of {matches.length} matches
+              </Typography>
+
+              <Box sx={{ ml: 8,  mr: 20, minWidth: 400, maxWidth: 800 }}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search matches by team..."
+                value={searchQuery}
+                onChange={handleSearch}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      🔍
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              </Box>
+            </Box>
+
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton 
                 onClick={goToPreviousPage} 
@@ -376,8 +411,8 @@ const Matches = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {matches.length > 0 ? (
-                  matches.map((match) => (
+                {currentMatches.length > 0 ? (
+                  currentMatches.map((match) => (
                     <TableRow key={match.match_id}>
                       <TableCell>{convertDate(match.date)}</TableCell>
                       <TableCell>{convertTime(match.date)}</TableCell>

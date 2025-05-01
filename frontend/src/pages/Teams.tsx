@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
+import { TextField, InputAdornment, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
 import AddTeamForm from '@/components/AddTeamForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
 
@@ -32,6 +32,7 @@ const Teams = () => {
   const [teamToEdit, setTeamToEdit] = useState<Team | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); //for sort order
+  const [searchQuery, setSearchQuery] = useState<string>(''); // for search query
 
   //table pages
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -73,6 +74,11 @@ const Teams = () => {
 
     fetchTeams();
   }, []);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const handleAddTeam = async (newTeam: Team) => {
     try {
@@ -178,7 +184,17 @@ const Teams = () => {
     setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
   };
 
-  const sortedTeams = [...teams].sort((a, b) =>
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // filter teams based on search query - name or code
+  const filteredTeams = teams.filter(team =>
+    (team.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    team.team_code.toLowerCase().includes(searchQuery.toLowerCase()) ) // case insensitive
+  );
+
+  const sortedTeams = [...filteredTeams].sort((a, b) =>
     sortOrder === 'asc'
       ? a.name.localeCompare(b.name)
       : b.name.localeCompare(a.name)
@@ -187,8 +203,8 @@ const Teams = () => {
   //helpers for pagination logic
   const indexOfLastTeam = currentPage * teamsPerPage;
   const indexOfFirstTeam = indexOfLastTeam - teamsPerPage;
-  const currentPlayers = sortedTeams.slice(indexOfFirstTeam, indexOfLastTeam);
-  const totalPages = Math.ceil(teams.length / teamsPerPage);
+  const currentTeams = sortedTeams.slice(indexOfFirstTeam, indexOfLastTeam);
+  const totalPages = Math.ceil(sortedTeams.length / teamsPerPage);
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
@@ -216,11 +232,31 @@ const Teams = () => {
         <Typography>Loading teams...</Typography>
       ) : (
         <>
-          {/* Pagination controls */}
+          {/* Pagination controls + search*/}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography>
-              Showing {indexOfFirstTeam + 1} to {Math.min(indexOfLastTeam, teams.length)} of {teams.length} teams
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography>
+                Showing {indexOfFirstTeam + 1} to {Math.min(indexOfLastTeam, teams.length)} of {teams.length} teams
+              </Typography>
+              
+              <Box sx={{ ml: 8,  mr: 20, minWidth: 400, maxWidth: 800 }}>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  placeholder="Search teams by name or team code..."
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        🔍
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+            </Box>
+            
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton 
                 onClick={goToPreviousPage} 
@@ -257,8 +293,8 @@ const Teams = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortedTeams.length > 0 ? (
-                  sortedTeams.map((team) => (
+                {currentTeams.length > 0 ? (
+                  currentTeams.map((team) => (
                     <TableRow key={team.team_id}>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert, IconButton } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert, IconButton, TextField, InputAdornment } from '@mui/material';
 import AddPlayerForm from '@/components/AddPlayerForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
 
@@ -29,6 +29,7 @@ const Players = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [teams, setTeams] = useState<{ team_id: number; name: string; logo?: string | null }[]>([]);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // for sort order
+  const [searchQuery, setSearchQuery] = useState<string>(''); // for search query
 
   //table pages
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -91,6 +92,11 @@ const Players = () => {
     };
     fetchData();
   }, []);
+
+  // Reset to first page when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Helper to get team name
   const getTeamName = (team_id?: number | null): string => {
@@ -224,7 +230,18 @@ const Players = () => {
     setCurrentPage(1); // Reset to first page on sort change
   };
 
-  const sortedPlayers = [...players].sort((a, b) =>
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  // filter players based on search query
+  const filteredPlayers = players.filter(player =>
+    (player.in_game_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     getTeamName(player.team_id).toLowerCase().includes(searchQuery.toLowerCase())) // case insensitive
+  );
+
+  // sort filtered players only 
+  const sortedPlayers = [...filteredPlayers].sort((a, b) =>
     sortOrder === 'asc'
       ? a.in_game_name.localeCompare(b.in_game_name)
       : b.in_game_name.localeCompare(a.in_game_name)
@@ -234,7 +251,7 @@ const Players = () => {
   const indexOfLastPlayer = currentPage * playersPerPage;
   const indexOfFirstPlayer = indexOfLastPlayer - playersPerPage;
   const currentPlayers = sortedPlayers.slice(indexOfFirstPlayer, indexOfLastPlayer);
-  const totalPages = Math.ceil(players.length / playersPerPage);
+  const totalPages = Math.ceil(sortedPlayers.length / playersPerPage);
 
   const goToNextPage = () => {
     if (currentPage < totalPages) {
@@ -262,11 +279,31 @@ const Players = () => {
         <Typography>Loading players...</Typography>
       ) : (
         <>
-          {/* Pagination controls */}
+          {/* Pagination controls + search */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Typography>
-              Showing {indexOfFirstPlayer + 1} to {Math.min(indexOfLastPlayer, players.length)} of {players.length} players
+              Showing {sortedPlayers.length > 0 ? indexOfFirstPlayer + 1 : 0} to {Math.min(indexOfLastPlayer, sortedPlayers.length)} of {sortedPlayers.length} players
             </Typography>
+
+            <Box sx={{ ml: 8,  mr: 20, minWidth: 400, maxWidth: 800 }}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search players by name or team..."
+                value={searchQuery}
+                onChange={handleSearch}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      🔍
+                    </InputAdornment>
+                  ),
+                }}
+              />
+              </Box>
+            </Box>
+
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <IconButton 
                 onClick={goToPreviousPage} 
