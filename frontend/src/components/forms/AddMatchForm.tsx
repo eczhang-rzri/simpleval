@@ -131,7 +131,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
     const matchDateTime = new Date(`${formData.date}T${formData.time}`);
     const now = new Date();
 
-    // Basic requirements
+    // Required fields
     if (!formData.date) newErrors.date = 'Date is required';
     if (!formData.time) newErrors.time = 'Time is required';
     if (!formData.team_a_id) newErrors.team_a_id = 'Team A is required';
@@ -157,7 +157,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
     const teamAHasEnough = teamAPlayers.length === 5;
     const teamBHasEnough = teamBPlayers.length === 5;
 
-    // Don't allow matches to be set in the future
+    // don't allow matches to be set in the future
     if (matchDateTime > now) {
       // compare the dates (ignoring time) 
       let matchDate = new Date(matchDateTime.getFullYear(), matchDateTime.getMonth(), matchDateTime.getDate());
@@ -174,7 +174,7 @@ const AddMatchForm: React.FC<AddMatchFormProps> = ({
       }
   } 
 
-    // Teams must 5 players to play a match, but only check when adding, not editing
+    // Teams must 5 players to play a match to simplify things, but only check when adding, not editing to prevent retroactive errors
     if (!isEditing) {
       if (!teamAHasEnough) newErrors.team_a_id = 'Each team must have exactly 5 players to play a match';
       if (!teamBHasEnough) newErrors.team_b_id = 'Each team must have exactly 5 players to play a match';

@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert, IconButton, TextField, InputAdornment } from '@mui/material';
-import AddPlayerForm from '@/components/AddPlayerForm';
+import AddPlayerForm from '@/components/forms/AddPlayerForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
+import HiddenComponent from '@/components/HiddenComponent';
 
 // Configure Axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
@@ -367,8 +368,8 @@ const Players = () => {
                       <TableCell>{player.status}</TableCell>
                       <TableCell>
                         <Button variant="contained" color="warning" onClick={() => navigate(`/PlayerPage/${player.player_id}`)} sx={{ mr: 1 }}>Player Page</Button>
-                        <Button variant="contained" onClick={() => handleEditPlayer(player)} sx={{ mr: 1 }}>Edit</Button>
-                        <Button variant="contained" color="error" onClick={() => handleDeletePlayer(player.player_id!)}>Delete</Button>
+                        <HiddenComponent><Button variant="contained" onClick={() => handleEditPlayer(player)} sx={{ mr: 1 }}>Edit</Button></HiddenComponent>
+                        <HiddenComponent><Button variant="contained" color="error" onClick={() => handleDeletePlayer(player.player_id!)}>Delete</Button></HiddenComponent>
                       </TableCell>
                     </TableRow>
                   ))

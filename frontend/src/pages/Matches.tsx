@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { TextField, InputAdornment, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, Typography, Alert } from '@mui/material';
-import AddMatchForm from '@/components/AddMatchForm';
+import AddMatchForm from '@/components/forms/AddMatchForm';
 import ProtectedComponent from '@/components/ProtectedComponent';
+import HiddenComponent from '@/components/HiddenComponent';
 
 //configure axios to use backend server URL
 axios.defaults.baseURL = 'https://simpleval-api.azurewebsites.net';
@@ -455,8 +456,8 @@ const Matches = () => {
                       <TableCell>{match.team_a_maps_won}-{match.team_b_maps_won}</TableCell>
                       <TableCell>
                         <Button variant="contained" color="warning" onClick={() => navigate(`/MatchPage/${match.match_id}`)} sx={{ mr: 1 }}>Match Page</Button> {/* Add link to match page */}
-                        <Button variant="contained" onClick={() => handleEditMatch(match)} sx={{ mr: 1 }}>Edit</Button>
-                        <Button variant="contained" color="error" onClick={() => handleDeleteMatch(match.match_id!)}>Delete</Button>
+                        <HiddenComponent><Button variant="contained" onClick={() => handleEditMatch(match)} sx={{ mr: 1 }}>Edit</Button></HiddenComponent>
+                        <HiddenComponent><Button variant="contained" color="error" onClick={() => handleDeleteMatch(match.match_id!)}>Delete</Button></HiddenComponent>
                       </TableCell>
                     </TableRow>
                   ))

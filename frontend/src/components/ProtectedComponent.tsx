@@ -9,7 +9,7 @@ const ProtectedComponent = ({ children }: { children: ReactNode }) => {
   if (!state.isAuthenticated) {
     return (
         <Box sx={{ p: 4, backgroundColor: '#f9f9f9' }}>
-        <Typography variant="h5" gutterBottom>You must be logged in to access this form.</Typography>
+        <Typography variant="h5" gutterBottom>You must be logged in to access this form.</Typography> {/* used to conceal forms behind auth */}
         <Button onClick={ () => signIn() }>Sign In</Button>
         </Box>
     )

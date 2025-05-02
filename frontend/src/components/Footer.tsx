@@ -2,7 +2,7 @@ import React from 'react'
 
 export default function Footer() {
     const date = new Date();
-    const year = date.getFullYear();
+    const year = date.getFullYear(); //get current year
 
     return (
         <footer>
