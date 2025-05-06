@@ -178,7 +178,7 @@ const MatchPage = () => {
             <Box 
               sx={{ display: 'flex', alignItems: 'center', gap: 4, pt: 1, pb: 1, pl: 4, pr: 4, cursor: 'pointer', '&:hover': { backgroundColor: '#f0f0f0' }, marginRight: 4, justifyContent: 'flex-end', flex: 1}}
               onClick={() => navigate(`/TeamPage/${teamA?.team_id}`)}> 
-              <Typography variant="h4" sx={{fontWeight: 'bold'}}>{teamA?.name}</Typography>
+              <Typography variant="h4" sx={{fontWeight: 'bold', textAlign: 'right'}}>{teamA?.name}</Typography>
               {teamA?.logo && <img src={teamA.logo} alt={`${teamA.name} logo`} className='img-match'/>}
             </Box>
             

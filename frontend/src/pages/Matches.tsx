@@ -37,7 +37,7 @@ const Matches = () => {
   const [matchToEdit, setMatchToEdit] = useState<Match | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [teams, setTeams] = useState<{ team_id: number; name: string; logo: string; }[]>([]);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // for sort order
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // for sort order
   const [searchQuery, setSearchQuery] = useState<string>(''); // for search query
 
   //table pages
@@ -401,7 +401,7 @@ const Matches = () => {
                 <TableRow sx={{ backgroundColor: '#002147', color: '#f9f9f9' }}>
                   <TableCell sx={{ color: '#f9f9f9', cursor: 'pointer' }} onClick={toggleSortOrder}>
                     Date&nbsp;
-                    {sortOrder === 'asc' ? '▼' : '▲'}
+                    {sortOrder === 'asc' ? '▲' : '▼'}
                   </TableCell>
                   <TableCell sx={{color: '#f9f9f9'}}>Time</TableCell>
                   <TableCell sx={{color: '#f9f9f9'}}>Team A</TableCell>
